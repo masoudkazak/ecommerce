@@ -1,0 +1,15 @@
+{{ item.name }}
+<hr>
+{% for comment in item.comments.all %}
+    {{ comment.user }}<br>
+    {{ comment.date }}<br>
+    {{ comment.text }}
+{% empty %}
+    <p>No comment</p>
+{% endfor %}
+<hr>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="comment">
+</form>

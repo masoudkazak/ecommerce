@@ -1,0 +1,6 @@
+{% for item in items %}
+    {% if item.images %}
+        <img src="{{ item.images.url }}" height="200" width="200"><br>
+    {% endif %}
+    {{ item.name }}<hr>
+{% endfor %}
