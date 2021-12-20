@@ -1,10 +1,31 @@
+from django.db.models import fields
 from rest_framework import serializers
+from item.models import Item, Comment, Category
+from taggit.serializers import (TagListSerializerField,
+                                TaggitSerializer)
 
-from item.models import Item
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        exclude = ['item',]
 
 
-class ItemSerializer(serializers.ModelSerializer):
+class ItemSerializerdetail(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
+    comments = CommentSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Item
-        exclude = ['date',]
+        fields = ['name', 'company', 'price', 'body', 'images','tags', 'comments', 'category']
+
+
+class ItemSerializerlist(serializers.ModelSerializer):
+    tags = TagListSerializerField()
     
+    class Meta:
+        model = Item
+        fields = '__all__'
+
+
+

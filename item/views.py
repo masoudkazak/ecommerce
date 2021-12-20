@@ -26,9 +26,6 @@ class ItemDetailView(ModelFormMixin ,DetailView):
     form_class = CommentForm
     
     def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return HttpResponseForbidden()
-        
         form = self.get_form()
         if form.is_valid():
             text = form.cleaned_data['text']
