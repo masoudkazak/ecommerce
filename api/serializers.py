@@ -1,6 +1,7 @@
+from django.db import models
 from django.db.models import fields
 from rest_framework import serializers
-from item.models import Item, Comment, Category
+from item.models import Item, Comment
 from taggit.serializers import (TagListSerializerField,
                                 TaggitSerializer)
 
@@ -26,6 +27,12 @@ class ItemSerializerlist(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = '__all__'
+
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['text','item']
 
 
 

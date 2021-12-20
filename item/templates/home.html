@@ -2,5 +2,11 @@
     {% if item.images %}
         <img src="{{ item.images.url }}" height="200" width="200"><br>
     {% endif %}
-    {{ item.name }}<hr>
+    <h1>{{ item.name }}</h1>
+    <h2>{{ item.price }}T</h2>
+    <h3>{{ item.company }}</h3>
+    <h4>{{ item.category }}</h4>
+    <h5>{{ item.body }}</h5>
+    <h6>{{ item.date }}</h6>
+    <hr>
 {% endfor %}
