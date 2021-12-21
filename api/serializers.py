@@ -9,7 +9,7 @@ from taggit.serializers import (TagListSerializerField,
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        exclude = ['item',]
+        exclude = ['item','id']
 
 
 class ItemSerializerdetail(TaggitSerializer, serializers.ModelSerializer):
@@ -32,7 +32,10 @@ class ItemSerializerlist(serializers.ModelSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['text','item']
+        fields = ['text','item', 'user']
+        extra_kwargs = {
+            'user': {'read_only':True}
+        }
 
 
 

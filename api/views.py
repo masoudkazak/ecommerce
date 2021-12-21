@@ -1,5 +1,5 @@
 from item.models import Item, Comment
-from rest_framework import generics, serializers, status
+from rest_framework import generics, status
 from .serializers import (ItemSerializerdetail,
                           ItemSerializerlist,
                           CommentCreateSerializer,
@@ -34,14 +34,7 @@ class CommentCreateAPIView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            user = request.user
-            new_comment = Comment(
-                text=serializer.validated_data['text'],
-                item=serializer.validated_data['item'],
-                user=user
-            )
-            new_comment.save
+            serializer.validated_data['user'] = self.request.user
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-

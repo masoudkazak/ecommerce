@@ -17,7 +17,7 @@ class Item(models.Model):
     company = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     price = models.BigIntegerField()
     body = models.TextField()
-    images = models.ImageField(blank=True, null=True)
+    images = models.ImageField(blank=True, null=True, upload_to='uploads/%Y/%m/%d/')
     date = models.DateTimeField(auto_now_add=True)
     tags = TaggableManager()
 
@@ -36,6 +36,9 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['-date']
+    
+    def __str__(self):
+        return f"{self.item} - {self.user}"
 
 
 
