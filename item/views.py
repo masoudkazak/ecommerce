@@ -1,4 +1,3 @@
-from django.http import HttpResponseForbidden
 from .models import Comment, Item
 from django.views.generic import (
     ListView,
