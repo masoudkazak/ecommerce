@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django import forms
+from django.contrib.auth import authenticate
 from django.forms import ValidationError
 
 
@@ -29,3 +30,5 @@ class UserCreateForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+            
