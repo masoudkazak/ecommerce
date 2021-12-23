@@ -6,6 +6,7 @@ from .views import (
     ItemCreateAPIView,
     CommentCreateAPIView,
     UserCreationAPIView,
+    UserRetrieveUpdateAPIView,
 )
 
 
@@ -19,4 +20,5 @@ urlpatterns = [
     path('detail/<int:pk>/update/', ItemUpdateAPIView.as_view(), name='itemupdate'),
     path("item/comment/create", CommentCreateAPIView.as_view(), name="commnetcreate"),
     path("account/create/", UserCreationAPIView.as_view(), name="accountcreate"),
+    path("account/<int:pk>/", UserRetrieveUpdateAPIView.as_view(), name="accountretrieveupdate"),
 ]

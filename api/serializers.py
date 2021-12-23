@@ -44,7 +44,6 @@ class UserCreationSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name', 'username', 'email', 'password',]
     
     def validate(self, data):
-        
         if len(data['password']) < 8:
             raise serializers.ValidationError("Enter more than 8 characters")
         return data
@@ -54,3 +53,23 @@ class UserCreationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email', 'password',]
+    
+    def validate(self, data):
+        if len(data['password']) < 8:
+            raise serializers.ValidationError("Enter more than 8 characters")
+        return data
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data['password'])
+        instance.first_name = validated_data['first_name']
+        instance.last_name = validated_data['last_name']
+        instance.username = validated_data['username']
+        instance.email = validated_data['email']
+        instance.save()
+        return instance
