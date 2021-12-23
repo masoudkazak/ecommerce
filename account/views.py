@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.contrib.auth.views import LoginView
 
 
-class UserCreateView(CreateView):
+class UserCreationView(CreateView):
     model = User
     template_name = 'create.html'
     form_class = UserCreateForm

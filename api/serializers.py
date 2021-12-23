@@ -1,9 +1,9 @@
-from django.db import models
-from django.db.models import fields
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from item.models import Item, Comment
 from taggit.serializers import (TagListSerializerField,
                                 TaggitSerializer)
+from rest_framework.serializers import ValidationError
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -38,4 +38,19 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         }
 
 
-
+class UserCreationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email', 'password',]
+    
+    def validate(self, data):
+        
+        if len(data['password']) < 8:
+            raise serializers.ValidationError("Enter more than 8 characters")
+        return data
+    
+    def create(self, validated_data):
+        user = super().create(validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user

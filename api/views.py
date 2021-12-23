@@ -1,11 +1,14 @@
+from django.contrib.auth.models import User
+from django.db.models import fields
 from item.models import Item, Comment
-from rest_framework import generics, status
+from rest_framework import generics, serializers, status
 from .serializers import (ItemSerializerdetail,
                           ItemSerializerlist,
                           CommentCreateSerializer,
 )
 from rest_framework.response import Response
-
+from .serializers import UserCreationSerializer
+    
 
 class ItemListAPIView(generics.ListAPIView):
     queryset = Item.objects.all()
@@ -38,3 +41,16 @@ class CommentCreateAPIView(generics.CreateAPIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserCreationAPIView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserCreationSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
