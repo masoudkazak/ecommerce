@@ -73,3 +73,4 @@ class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
         instance.email = validated_data['email']
         instance.save()
         return instance
+    
