@@ -1,7 +1,14 @@
 {% if request.user.is_authenticated %}
-    <a href="{% url 'account:logout' %}">Logout</a>
+    <a href="{% url 'account:logout' %}">Logout</a><br>
+    <a href="{% url 'account:update' request.user.pk %}">Account</a>
+    {% if request.user.profile %}
+        <a href="{% url 'account:profileupdate' request.user.profile.pk %}">Profile</a>
+    {% else %}
+        <a href="{% url 'account:profilecreate' request.user.pk %}">Complete the profile</a>
+    {% endif %}
 {% else %}
-    <a href="{% url 'account:login' %}">Login</a>
+    <a href="{% url 'account:login' %}">Login</a><br>
+    <a href="{% url 'account:create' %}">Create Account</a>
 {% endif %}
 <hr>
 {% for item in items %}
