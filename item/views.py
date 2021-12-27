@@ -1,11 +1,5 @@
 from .models import Comment, Item
-from django.views.generic import (
-    ListView,
-    DetailView,
-    UpdateView,
-    DeleteView,
-    CreateView,
-)
+from django.views.generic import *
 from .forms import ItemUpdateForm, CommentForm
 from django.urls import reverse
 from django.views.generic.edit import ModelFormMixin
