@@ -19,7 +19,7 @@ class Item(models.Model):
     body = models.TextField()
     images = models.ImageField(blank=True, null=True, upload_to='uploads/%Y/%m/%d/')
     date = models.DateTimeField(auto_now_add=True)
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True)
 
     class Meta:
         ordering = ['-date']
