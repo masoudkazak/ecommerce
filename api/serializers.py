@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db.models import fields
 from rest_framework import serializers
 from item.models import Item, Comment
 from taggit.serializers import (TagListSerializerField,
@@ -89,4 +90,13 @@ class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
-    
+class UserPasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(
+        style={'input_type': 'password'}
+    )
+    password1 = serializers.CharField(
+        style={'input_type': 'password'}
+    )
+    password2 = serializers.CharField(
+        style={'input_type': 'password'}
+    )
