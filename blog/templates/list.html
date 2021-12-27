@@ -1,0 +1,12 @@
+{% for post in posts %}
+    <h1>{{ post.title }}</h1><br>
+    <img src="{{ post.images.url }}" height='400' width='600'><br>
+    <h4>{{ post.author }}</h4><br>
+    <h5>{{ post.category }}</h5><br>
+    <h6>{{ post.created }}</h6><br>
+    <p>{{ post.body }}</p><br>
+    {% for tag in post.tags.all %}
+        <a href="#">#{{ tag }},</a>
+    {% endfor %}
+    <hr>
+{% endfor %}
