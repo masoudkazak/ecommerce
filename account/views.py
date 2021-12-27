@@ -9,7 +9,7 @@ from django.views.generic.edit import ModelFormMixin
 from .models import Profile
 from .forms import UserCreateForm, UserUpdateForm, ProfileCreateForm
 from django.urls import reverse
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.shortcuts import redirect
 
 
@@ -68,3 +68,10 @@ class ProfileUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse('item:list')
+
+
+class UserPasswordChangeView(PasswordChangeView):
+    template_name = 'password_change.html'
+    
+    def get_success_url(self):
+        return reverse('account:login')

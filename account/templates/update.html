@@ -3,3 +3,6 @@
     {{ form.as_p }}
     <input type='submit' value="Update">
 </form>
+{% if request.user.is_authenticated %}
+    <a href="{% url 'account:passwordchange' %}">Change Password</a>
+{% endif %}
