@@ -13,7 +13,7 @@ class Profile(models.Model):
     image = models.ImageField(upload_to='profile/%Y/%m/%d/', blank=True, null=True)
     phone_number = models.BigIntegerField(blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    gender = models.CharField(max_length=25, choices=GENDER,)
+    gender = models.CharField(max_length=25, choices=GENDER, blank=True, null=True)
 
     class Meta:
         ordering = ['user',]

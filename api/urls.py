@@ -1,13 +1,5 @@
 from django.urls import path
-from .views import (
-    ItemListAPIView,
-    ItemRetrieveAPIView,
-    ItemUpdateAPIView,
-    ItemCreateAPIView,
-    CommentCreateAPIView,
-    UserCreationAPIView,
-    UserRetrieveUpdateAPIView,
-)
+from .views import *
 
 
 app_name = 'api'
@@ -19,6 +11,6 @@ urlpatterns = [
     path('detail/<int:pk>/', ItemRetrieveAPIView.as_view(), name='itemdetaildelete'),
     path('detail/<int:pk>/update/', ItemUpdateAPIView.as_view(), name='itemupdate'),
     path("item/comment/create", CommentCreateAPIView.as_view(), name="commnetcreate"),
-    path("account/create/", UserCreationAPIView.as_view(), name="accountcreate"),
+    path("account/create/", UserCreationAPIView.as_view(), name="accountcreation"),
     path("account/<int:pk>/", UserRetrieveUpdateAPIView.as_view(), name="accountretrieveupdate"),
 ]

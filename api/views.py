@@ -1,13 +1,9 @@
 from django.contrib.auth.models import User
 from item.models import Item, Comment
+from account.models import Profile
 from rest_framework import generics, status
-from .serializers import (ItemSerializerdetail,
-                          ItemSerializerlist,
-                          CommentCreateSerializer,
-                          UserRetrieveUpdateSerializer,
-)
+from .serializers import *
 from rest_framework.response import Response
-from .serializers import UserCreationSerializer
     
 
 class ItemListAPIView(generics.ListAPIView):
