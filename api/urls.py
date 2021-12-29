@@ -14,4 +14,6 @@ urlpatterns = [
     path("account/create/", UserCreationAPIView.as_view(), name="accountcreation"),
     path("account/<int:pk>/", UserRetrieveUpdateAPIView.as_view(), name="accountretrieveupdate"),
     path("account/passwordchange/", UserChangePasswordAPIView.as_view(), name="accountchangepassword"),
+    path("blog/", PostListAPIView.as_view(), name="bloglist"),
+    path("blog/<int:pk>/", PostRetrieveDestroyAPIView.as_view(), name="blogdetaildelete"),
 ]

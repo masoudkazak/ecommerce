@@ -3,6 +3,7 @@ from item.models import Item, Comment
 from rest_framework import generics, status
 from .serializers import *
 from rest_framework.response import Response
+from blog.models import Post
     
 
 class ItemListAPIView(generics.ListAPIView):
@@ -78,3 +79,21 @@ class UserChangePasswordAPIView(generics.UpdateAPIView):
                 return Response(response)
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostListAPIView(generics.ListAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostListSerializer
+
+
+class PostRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostRetrieveSerializer
+
+
+class PostUpdateAPIView(generics.UpdateAPIView):
+    pass
+
+
+class PostCreateAPIView(generics.CreateAPIView):
+    pass

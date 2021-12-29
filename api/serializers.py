@@ -1,16 +1,17 @@
 from django.contrib.auth.models import User
-from django.db.models import fields
 from rest_framework import serializers
 from item.models import Item, Comment
 from taggit.serializers import (TagListSerializerField,
                                 TaggitSerializer)
 from account.models import Profile
+from blog.models import Post
+from blog.models import PostComment
 
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        exclude = ['item','id']
+        exclude = ['item',]
 
 
 class ItemSerializerdetail(TaggitSerializer, serializers.ModelSerializer):
@@ -100,3 +101,24 @@ class UserPasswordChangeSerializer(serializers.Serializer):
     password2 = serializers.CharField(
         style={'input_type': 'password'}
     )
+
+
+class PostListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = "__all__"
+
+
+class PostCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostComment
+        exclude = ["post",]
+
+
+class PostRetrieveSerializer(serializers.ModelSerializer):
+    tags = TagListSerializerField()
+    post_comments = PostCommentSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Post
+        fields = ['author', 'title', 'category', 'body', 'images','tags', 'post_comments', 'created', 'updated',]
