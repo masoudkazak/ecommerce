@@ -19,7 +19,7 @@ class UserCreationView(CreateView):
     form_class = UserCreateForm
 
     def get_success_url(self):
-        return reverse('item:list')
+        return reverse('account:login')
 
 
 class UserLoginView(LoginView):
@@ -58,7 +58,7 @@ class ProfielCreateView(ModelFormMixin ,DetailView):
                                 bio=bio,
                                 gender=gender)
             new_profile.save()
-            return redirect('account:update', pk=user.pk)
+            return reverse('item:list')
 
 
 class ProfileUpdateView(UpdateView):

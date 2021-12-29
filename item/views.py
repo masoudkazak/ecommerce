@@ -1,3 +1,5 @@
+from django.http import request
+from django.urls.base import reverse_lazy
 from .models import Comment, Item
 from django.views.generic import *
 from .forms import ItemUpdateForm, CommentForm
@@ -37,6 +39,10 @@ class ItemUpdateView(UpdateView):
     form_class = ItemUpdateForm
     template_name = 'itemupdate.html'
 
+    def get_success_url(self):
+        item = self.get_object()
+        return reverse_lazy("item:detail", args=(item.id,))
+
 
 class ItemDeleteView(DeleteView):
     model = Item
@@ -53,5 +59,6 @@ class ItemCreateView(CreateView):
 
     def get_success_url(self):
         return reverse('item:list')
+    
     
   
