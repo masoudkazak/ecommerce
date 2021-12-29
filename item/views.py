@@ -1,4 +1,4 @@
-from django.http import request
+from django.shortcuts import render
 from django.urls.base import reverse_lazy
 from .models import Comment, Item
 from django.views.generic import *
@@ -6,6 +6,8 @@ from .forms import ItemUpdateForm, CommentForm
 from django.urls import reverse
 from django.views.generic.edit import ModelFormMixin
 from django.shortcuts import redirect
+from django.views import View
+from django.http import HttpResponseRedirect
 
 
 class ItemListView(ListView):
@@ -52,13 +54,36 @@ class ItemDeleteView(DeleteView):
         return reverse('item:list')
 
 
-class ItemCreateView(CreateView):
-    model = Item
+class ItemCreateView(View):
     form_class = ItemUpdateForm
     template_name = 'itemcreate.html'
 
-    def get_success_url(self):
-        return reverse('item:list')
-    
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST, request.FILES)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            category = form.cleaned_data['category']
+            price = form.cleaned_data['price']
+            body = form.cleaned_data['body']
+            images = form.cleaned_data['images']
+            tags = form.cleaned_data['tags']
+            company = request.user
+            new_item = Item.objects.create(
+                name = name,
+                category = category,
+                price = price,
+                body = body,
+                images = images,
+                tags = tags,
+                company = company,
+            )
+            new_item.save()
+            return HttpResponseRedirect(reverse('item:list'))
+
+        return render(request, self.template_name, {'form': form})
     
   
