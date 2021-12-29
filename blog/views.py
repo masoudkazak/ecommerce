@@ -71,3 +71,11 @@ class PostCreateView(View):
             return HttpResponseRedirect(reverse('blog:list'))
 
         return render(request, self.template_name, {'form': form})
+
+
+class PostDeleteView(generic.DeleteView):
+    model = Post
+    template_name = "postdelete.html"
+    
+    def get_success_url(self):
+        return reverse('blog:list')
