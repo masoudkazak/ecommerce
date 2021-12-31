@@ -1,29 +1,31 @@
 from django.contrib.auth.models import User
 from item.models import Item, Comment
-from rest_framework import generics, status
-from .serializers import *
-from rest_framework.response import Response
 from blog.models import Post
-    
+
+from rest_framework import generics, status
+from rest_framework.response import Response
+
+from .serializers import *
+
 
 class ItemListAPIView(generics.ListAPIView):
     queryset = Item.objects.all()
-    serializer_class = ItemSerializerlist
+    serializer_class = ItemListSerializer
 
 
 class ItemRetrieveAPIView(generics.RetrieveDestroyAPIView):
     queryset = Item.objects.all()
-    serializer_class = ItemSerializerdetail
+    serializer_class = ItemDetailSerializer
 
 
 class ItemUpdateAPIView(generics.UpdateAPIView):
     queryset = Item.objects.all()
-    serializer_class = ItemSerializerdetail
+    serializer_class = ItemSerializerUpdate
 
 
 class ItemCreateAPIView(generics.CreateAPIView):
     queryset = Item.objects.all()
-    serializer_class = ItemSerializerdetail
+    serializer_class = ItemDetailSerializer
 
 
 class CommentCreateAPIView(generics.CreateAPIView):
@@ -44,7 +46,7 @@ class UserCreationAPIView(generics.CreateAPIView):
     serializer_class = UserCreationSerializer
 
 
-class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+class UserRetrieveUpdateAPIView(generics.UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRetrieveUpdateSerializer
 
@@ -92,7 +94,8 @@ class PostRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
 
 
 class PostUpdateAPIView(generics.UpdateAPIView):
-    pass
+    queryset = Post.objects.all()
+    serializer_class = PostUpdateSerializer
 
 
 class PostCreateAPIView(generics.CreateAPIView):

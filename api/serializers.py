@@ -14,16 +14,24 @@ class CommentSerializer(serializers.ModelSerializer):
         exclude = ['item',]
 
 
-class ItemSerializerdetail(TaggitSerializer, serializers.ModelSerializer):
+class ItemDetailSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField()
     comments = CommentSerializer(many=True, read_only=True)
     
     class Meta:
         model = Item
-        fields = ['name', 'company', 'price', 'body', 'images','tags', 'comments', 'category']
+        fields = ['name', 'company', 'price', 'body', 'images','tags', 'comments', 'category',]
 
 
-class ItemSerializerlist(serializers.ModelSerializer):
+class ItemSerializerUpdate(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
+
+    class Meta:
+        model = Item
+        fields = ['name', 'company', 'price', 'body', 'images','tags', 'category', 'company',]
+
+
+class ItemListSerializer(serializers.ModelSerializer):
     tags = TagListSerializerField()
     
     class Meta:
@@ -121,4 +129,14 @@ class PostRetrieveSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Post
-        fields = ['author', 'title', 'category', 'body', 'images','tags', 'post_comments', 'created', 'updated',]
+        fields = ['author', 'title', 'category', 'body', 'images','tags',
+                  'post_comments', 'created', 'updated',]
+
+
+class PostUpdateSerializer(serializers.ModelSerializer):
+    tags = TagListSerializerField()
+
+    class Meta:
+        model = Post
+        fields = ['author', 'title', 'category', 'body', 'images','tags',
+                  'created', 'updated',]
