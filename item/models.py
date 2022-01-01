@@ -41,5 +41,31 @@ class Comment(models.Model):
         return f"{self.item} - {self.user}"
 
 
+class OrderItem(models.Model):
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    count = models.PositiveIntegerField(default=1)
+
+    def get_price(self):
+        return self.item.price * self.count
+
+    def __str__(self):
+        return f"{self.customer} - {self.item}"
 
 
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    items = models.ManyToManyField(OrderItem)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def get_price(self):
+        price = 0
+        for item in self.items.all:
+            price += item.price
+        return price
+
+    def __str__(self):
+        return self.user
+    
+
+    
