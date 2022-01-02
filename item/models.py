@@ -54,18 +54,18 @@ class OrderItem(models.Model):
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="customer")
     items = models.ManyToManyField(OrderItem)
     created = models.DateTimeField(auto_now_add=True)
 
     def get_price(self):
         price = 0
-        for item in self.items.all:
-            price += item.price
+        for oreritem in self.items.all():
+            price += oreritem.get_price()
         return price
-
+        
     def __str__(self):
-        return self.user
+        return str(self.user)
     
 
     

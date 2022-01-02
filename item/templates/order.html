@@ -1,0 +1,11 @@
+{% for order in user.customer.all %}
+    {% for item in order.items.all %}
+        {{ item.item.name }}|
+        {{ item.item.price }}|
+        {{ item.count }}|
+        {{ item.get_price }}<hr>
+    {% endfor %}
+    total = {{ order.get_price }}
+{% endfor %}
+
+

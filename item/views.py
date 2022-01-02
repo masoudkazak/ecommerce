@@ -1,13 +1,16 @@
+from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from django.urls.base import reverse_lazy
-from .models import Comment, Item
+from .models import *
+from django.contrib.auth.models import User
 from django.views.generic import *
-from .forms import ItemUpdateForm, CommentForm
+from .forms import *
 from django.urls import reverse
 from django.views.generic.edit import ModelFormMixin
 from django.shortcuts import redirect
 from django.views import View
 from django.http import HttpResponseRedirect
+from django.contrib import messages
 
 
 class ItemListView(ListView):
@@ -87,3 +90,49 @@ class ItemCreateView(View):
         return render(request, self.template_name, {'form': form})
     
   
+class OrderItemView(ModelFormMixin, DetailView):
+    model = User
+    template_name = 'orderitem.html'
+    form_class = OrderItemForm
+    
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            item = form.cleaned_data['item']
+            count = form.cleaned_data['count']
+
+            if count == 0:
+                messages.error(request, "صفر تعداد انتخاب کرده اید")
+                return redirect('item:orderitem', pk=request.user.pk)
+
+            try:      
+                update_orderitem = OrderItem.objects.get(item=item)
+            except OrderItem.DoesNotExist:
+                new_orderitem = OrderItem.objects.create(item=item,
+                                    count=count,
+                                    customer=request.user)
+                new_orderitem.save()
+            else:
+                update_orderitem.count = update_orderitem.count + count
+                update_orderitem.save()
+
+            try:
+                update_order = Order.objects.get(user=request.user)
+            except Order.DoesNotExist:
+                new_order = Order(
+                    user=request.user,
+                )
+                new_order.save()
+                new_order.items.add(OrderItem.objects.get(item=item))
+            else:
+                update_order.items.add(OrderItem.objects.get(item=item))
+
+            return redirect('item:list')
+
+
+class OrderDetailView(DetailView):
+    model = User
+    context_object_name = "user"
+    template_name = "order.html"
+
+    

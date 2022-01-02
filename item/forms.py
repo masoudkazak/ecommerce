@@ -1,5 +1,5 @@
 from django import forms
-from .models import Item, Comment
+from .models import Item, Comment, Order, OrderItem
 
 
 class ItemUpdateForm(forms.ModelForm):
@@ -12,3 +12,10 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ['text',]
+
+
+class OrderItemForm(forms.ModelForm):
+    class Meta:
+        model = OrderItem
+        exclude = ['customer',]
+
