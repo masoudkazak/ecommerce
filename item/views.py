@@ -1,4 +1,5 @@
-from django.core.exceptions import ValidationError
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import query
 from django.shortcuts import render
 from django.urls.base import reverse_lazy
 from .models import *
@@ -6,7 +7,7 @@ from django.contrib.auth.models import User
 from django.views.generic import *
 from .forms import *
 from django.urls import reverse
-from django.views.generic.edit import ModelFormMixin
+from django.views.generic.edit import FormMixin, ModelFormMixin
 from django.shortcuts import redirect
 from django.views import View
 from django.http import HttpResponseRedirect
@@ -130,9 +131,37 @@ class OrderItemView(ModelFormMixin, DetailView):
             return redirect('item:list')
 
 
-class OrderDetailView(DetailView):
-    model = User
-    context_object_name = "user"
+class BasketView(DetailView):
+    model = Order
+    context_object_name = "order"
     template_name = "order.html"
 
+    def get_queryset(self):
+        my_order = Order.objects.filter(user=self.request.user)
+        return my_order
+
+
+class AddressView(LoginRequiredMixin ,FormMixin, ListView):
+    model = Address
+    form_class = AddressSelectForm
+    template_name = "addresslist.html"
+    login_url = "/account/login/"
+    context_object_name = "addresses"
     
+    def get_queryset(self):
+        my_address = Address.objects.filter(user=self.request.user)
+        return my_address
+    
+    # def get_form(self):
+    #      form = self.get_form()
+
+
+
+class AddressUpdateView(LoginRequiredMixin,UpdateView):
+    model = Address
+    template_name = "addressupdate.html"
+    form_class = AddressUpdateForm
+    login_url = "/account/login/"
+
+    def get_success_url(self):
+        return reverse("item:address")

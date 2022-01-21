@@ -10,7 +10,7 @@ from .models import Profile
 from .forms import UserCreateForm, UserUpdateForm, ProfileCreateForm
 from django.urls import reverse
 from django.contrib.auth.views import LoginView, PasswordChangeView
-from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 
 
 class UserCreationView(CreateView):
@@ -58,7 +58,7 @@ class ProfielCreateView(ModelFormMixin ,DetailView):
                                 bio=bio,
                                 gender=gender)
             new_profile.save()
-            return reverse('item:list')
+            return HttpResponseRedirect(reverse("item:list"))
 
 
 class ProfileUpdateView(UpdateView):

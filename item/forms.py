@@ -1,5 +1,8 @@
+from cProfile import label
 from django import forms
-from .models import Item, Comment, Order, OrderItem
+from django.db.models import fields
+from django.forms import widgets
+from .models import Address, Item, Comment, OrderItem
 
 
 class ItemUpdateForm(forms.ModelForm):
@@ -19,3 +22,16 @@ class OrderItemForm(forms.ModelForm):
         model = OrderItem
         exclude = ['customer',]
 
+
+class AddressUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        exclude = ['user', 'this_address']
+
+
+class AddressSelectForm(forms.ModelForm):
+    # this_address = forms.ChoiceField(,widget=forms.RadioSelect)
+    class Meta:
+        model = Address
+        fields = ['this_address',]
+    

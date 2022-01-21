@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from taggit.managers import TaggableManager
 
 
-
 class Category(models.Model):
     name = models.CharField(max_length=250)
     
@@ -54,7 +53,7 @@ class OrderItem(models.Model):
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="customer")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="customer")
     items = models.ManyToManyField(OrderItem)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -68,4 +67,14 @@ class Order(models.Model):
         return str(self.user)
     
 
+class Address(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    zip_code = models.CharField(max_length=250)
+    home_address = models.TextField()
+    mobile_number = models.CharField(max_length=20)
+    body = models.TextField(null=True, blank=True)
+    this_address = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user} - {self.mobile_number}"
     
