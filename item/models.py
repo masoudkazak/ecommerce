@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 from taggit.managers import TaggableManager
+from django.core.validators import RegexValidator
+
+
+PHONE_NUMBER_REGEX = RegexValidator(
+    regex="^09\d{9}$",
+    message="شماره وارد شده اشتباه است\n09123456789",
+)
 
 
 class Category(models.Model):
@@ -71,7 +78,7 @@ class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     zip_code = models.CharField(max_length=250)
     home_address = models.TextField()
-    mobile_number = models.CharField(max_length=20)
+    mobile_number = models.CharField(max_length=20, validators=[PHONE_NUMBER_REGEX])
     body = models.TextField(null=True, blank=True)
     this_address = models.BooleanField(default=False)
 

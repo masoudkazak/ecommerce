@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import query
 from django.shortcuts import render
 from django.urls.base import reverse_lazy
 from .models import *
