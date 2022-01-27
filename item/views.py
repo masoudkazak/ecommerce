@@ -1,12 +1,12 @@
+from ast import Or
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls.base import reverse_lazy
 from .models import *
-from django.contrib.auth.models import User
 from django.views.generic import *
 from .forms import *
 from django.urls import reverse
-from django.views.generic.edit import FormMixin, ModelFormMixin
+from django.views.generic.edit import FormMixin
 from django.shortcuts import redirect
 from django.views import View
 from django.http import HttpResponseRedirect
@@ -18,25 +18,88 @@ class ItemListView(ListView):
     context_object_name = 'items'
     template_name = 'home.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['baskets'] = Order.objects.filter(user=self.request.user)
+            return context
+        context['baskets'] = None
+        return context
 
-class ItemDetailView(ModelFormMixin ,DetailView):
-    model = Item
-    context_object_name = 'item'
+
+class ItemDetailView(View):
     template_name = 'itemdetail.html'
-    form_class = CommentForm
+
+    def get_object(self):
+        item = get_object_or_404(Item, pk=self.kwargs['pk'])
+        return item
+
+    def get_context_data(self, **kwargs):
+        kwargs['item'] = self.get_object()
+        if 'orderitem_form' not in kwargs:
+            kwargs['orderitem_form'] = OrderItemForm()
+        if 'comment_form' not in kwargs:
+            kwargs['comment_form'] = CommentForm()
+
+        return kwargs
+    
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, self.get_context_data())
     
     def post(self, request, *args, **kwargs):
-        form = self.get_form()
-        if form.is_valid():
-            text = form.cleaned_data['text']
+        ctxt = {}
+        if 'comment' in request.POST:
+            comment_form = CommentForm(request.POST)
+
+            if comment_form.is_valid():
+                text = comment_form.cleaned_data['text']
+                item = self.get_object()
+                user = request.user
+                new_comment = Comment(text=text,
+                                    item=item,
+                                    user=user)
+                new_comment.save()
+                return redirect('item:detail', pk=item.pk)
+            else:
+                ctxt['response_form'] = CommentForm
+
+        elif 'orderitem' in request.POST:
+            orderitem_form = OrderItemForm(request.POST)
             item = self.get_object()
-            user = request.user
-            new_comment = Comment(text=text,
-                                item=item,
-                                user=user)
-            new_comment.save()
-            return redirect('item:detail', pk=item.pk)
-    
+            if orderitem_form.is_valid():
+                count = orderitem_form.cleaned_data['count']
+
+                if count == 0:
+                    messages.error(request, "صفر تعداد انتخاب کرده اید")
+                    return redirect('item:orderitem', pk=request.user.pk)
+
+                try:      
+                    update_orderitem = OrderItem.objects.get(item=item)
+                except OrderItem.DoesNotExist:
+                    new_orderitem = OrderItem.objects.create(item=item,
+                                        count=count,
+                                        customer=request.user)
+                    new_orderitem.save()
+                else:
+                    update_orderitem.count = update_orderitem.count + count
+                    update_orderitem.save()
+
+                try:
+                    update_order = Order.objects.get(user=request.user)
+                except Order.DoesNotExist:
+                    new_order = Order(
+                        user=request.user,
+                    )
+                    new_order.save()
+                    new_order.items.add(OrderItem.objects.get(item=item))
+                else:
+                    update_order.items.add(OrderItem.objects.get(item=item))
+
+                return redirect('item:list')
+            else:
+                ctxt['response_form'] = CommentForm
+
+        return render(request, self.template_name, self.get_context_data(**ctxt))
 
 
 class ItemUpdateView(UpdateView):
@@ -89,46 +152,6 @@ class ItemCreateView(View):
 
         return render(request, self.template_name, {'form': form})
     
-  
-class OrderItemView(ModelFormMixin, DetailView):
-    model = User
-    template_name = 'orderitem.html'
-    form_class = OrderItemForm
-    
-    def post(self, request, *args, **kwargs):
-        form = self.get_form()
-        if form.is_valid():
-            item = form.cleaned_data['item']
-            count = form.cleaned_data['count']
-
-            if count == 0:
-                messages.error(request, "صفر تعداد انتخاب کرده اید")
-                return redirect('item:orderitem', pk=request.user.pk)
-
-            try:      
-                update_orderitem = OrderItem.objects.get(item=item)
-            except OrderItem.DoesNotExist:
-                new_orderitem = OrderItem.objects.create(item=item,
-                                    count=count,
-                                    customer=request.user)
-                new_orderitem.save()
-            else:
-                update_orderitem.count = update_orderitem.count + count
-                update_orderitem.save()
-
-            try:
-                update_order = Order.objects.get(user=request.user)
-            except Order.DoesNotExist:
-                new_order = Order(
-                    user=request.user,
-                )
-                new_order.save()
-                new_order.items.add(OrderItem.objects.get(item=item))
-            else:
-                update_order.items.add(OrderItem.objects.get(item=item))
-
-            return redirect('item:list')
-
 
 class BasketView(DetailView):
     model = Order
@@ -153,7 +176,6 @@ class AddressView(LoginRequiredMixin ,FormMixin, ListView):
     
     # def get_form(self):
     #      form = self.get_form()
-
 
 
 class AddressUpdateView(LoginRequiredMixin,UpdateView):

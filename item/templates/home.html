@@ -1,5 +1,7 @@
 {% if request.user.is_authenticated %}
-    <a href="{% url 'item:basket' request.user.id %}">basket</a>
+    {% for basket in baskets %}
+        <a href="{% url 'item:basket' basket.id %}">basket</a>
+    {% endfor %}
     <a href="{% url 'account:logout' %}">Logout</a><br>
     <a href="{% url 'account:update' request.user.pk %}">Account</a>
     {% if request.user.profile %}

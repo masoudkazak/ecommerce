@@ -7,11 +7,26 @@
 {% empty %}
     <p>No comment</p>
 {% endfor %}
-
 {% if request.user.is_authenticated %}
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="comment">
+        {{ comment_form.as_p }}
+        <input type="submit" value="comment" name="comment">
     </form>
+{% else %}
+    <a href="{% url 'account:login' %}">Login</a>
+    <a href="{% url 'account:create' %}">SignUp</a>
+{% endif %}
+<hr>
+{% if request.user.is_authenticated %}
+<form method="post">
+    {% csrf_token %}
+    {{ orderitem_form.as_p }}
+    <input type="submit" value="Add" name="orderitem">
+</form>
+{% else %}
+<form method="post">
+    {% csrf_token %}
+    <a href="{% url 'account:login' %}"><button type="button">Add</button></a>
+</form>
 {% endif %}

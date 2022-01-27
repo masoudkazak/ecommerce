@@ -1,7 +1,4 @@
-from cProfile import label
 from django import forms
-from django.db.models import fields
-from django.forms import widgets
 from .models import Address, Item, Comment, OrderItem
 
 
@@ -20,7 +17,7 @@ class CommentForm(forms.ModelForm):
 class OrderItemForm(forms.ModelForm):
     class Meta:
         model = OrderItem
-        exclude = ['customer',]
+        fields = ['count',]
 
 
 class AddressUpdateForm(forms.ModelForm):
