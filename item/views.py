@@ -71,7 +71,7 @@ class ItemDetailView(View):
 
                 if count == 0:
                     messages.error(request, "صفر تعداد انتخاب کرده اید")
-                    return redirect('item:orderitem', pk=request.user.pk)
+                    return redirect('item:detail', pk=item.pk)
 
                 try:      
                     update_orderitem = OrderItem.objects.get(item=item)
@@ -163,19 +163,44 @@ class BasketView(DetailView):
         return my_order
 
 
-class AddressView(LoginRequiredMixin ,FormMixin, ListView):
-    model = Address
-    form_class = AddressSelectForm
+class AddressView(LoginRequiredMixin ,View):
     template_name = "addresslist.html"
     login_url = "/account/login/"
-    context_object_name = "addresses"
+
+    def get_object(self):
+        addresses =Address.objects.filter(user=self.request.user)
+        count = 0
+        for address in addresses:
+            if address.this_address == True:
+                count += 1
+        if count > 1:
+            for address in addresses:
+                if address.this_address == True:
+                    address.this_address = False
+                    address.save()
+        return addresses
     
-    def get_queryset(self):
-        my_address = Address.objects.filter(user=self.request.user)
-        return my_address
+    def get_context_data(self, **kwargs):
+        kwargs['addresses'] = self.get_object()
+        return kwargs
     
-    # def get_form(self):
-    #      form = self.get_form()
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, self.get_context_data())
+    
+    def post(self, request, *args, **kwargs):
+        ctxt = {}
+        
+        if 'choose' in request.POST:
+            home_address = request.POST['fav-language']
+            select_address = Address.objects.get(home_address=home_address)
+            for address in self.get_object():
+                if select_address == address:
+                    select_address.this_address = True
+                    select_address.save()
+                else:
+                    address.this_address = False
+                    address.save()
+        return render(request, self.template_name, self.get_context_data(**ctxt))
 
 
 class AddressUpdateView(LoginRequiredMixin,UpdateView):

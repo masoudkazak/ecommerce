@@ -1,10 +1,10 @@
 <form method="POST">
     {% csrf_token %}
     {% for address in addresses %}
-        <input type="radio" id="{{address.pk}}" name="fav-language" value="{{address.home_address}}">
+        <input type="radio" id="{{address.pk}}" name="fav-language" value="{{address.home_address}}" {% if address.this_address == True %}checked{% endif %}>
         <label for="{{address.pk}}">{{ address.home_address }}</label><br>
         <br><a href="{% url 'item:addressupdate' address.pk %}">Edit</a><br><hr>
     {% endfor %}
-    <br><input type="submit" value="Change">
+    <br><input type="submit" value="Change" name="choose">
 </form>
 
