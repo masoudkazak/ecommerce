@@ -1,4 +1,3 @@
-from ast import Or
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404
 from django.urls.base import reverse_lazy
@@ -6,7 +5,6 @@ from .models import *
 from django.views.generic import *
 from .forms import *
 from django.urls import reverse
-from django.views.generic.edit import FormMixin
 from django.shortcuts import redirect
 from django.views import View
 from django.http import HttpResponseRedirect
@@ -170,6 +168,7 @@ class AddressView(LoginRequiredMixin ,View):
     def get_object(self):
         addresses =Address.objects.filter(user=self.request.user)
         count = 0
+        # if there is bug, all addresses change to False
         for address in addresses:
             if address.this_address == True:
                 count += 1
@@ -185,6 +184,8 @@ class AddressView(LoginRequiredMixin ,View):
         return kwargs
     
     def get(self, request, *args, **kwargs):
+        if len(self.get_object()) == 0:
+            return redirect('item:addresscreate')
         return render(request, self.template_name, self.get_context_data())
     
     def post(self, request, *args, **kwargs):
@@ -204,10 +205,40 @@ class AddressView(LoginRequiredMixin ,View):
 
 
 class AddressUpdateView(LoginRequiredMixin,UpdateView):
-    model = Address
     template_name = "addressupdate.html"
     form_class = AddressUpdateForm
     login_url = "/account/login/"
+    model = Address
 
     def get_success_url(self):
         return reverse("item:address")
+
+
+class AddressCreateView(LoginRequiredMixin, View):
+    form_class = AddressUpdateForm
+    template_name = "addresscreate.html"
+    
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+    
+    def post(self, requset, *args, **kwargs):
+        form = AddressUpdateForm(requset.POST)
+        if form.is_valid():
+            zip_code = form.cleaned_data['zip_code']
+            home_address = form.cleaned_data['home_address']
+            mobile_number = form.cleaned_data['mobile_number']
+            body = form.cleaned_data['body']
+            user = requset.user
+            new_address = Address.objects.create(
+                zip_code = zip_code,
+                home_address = home_address,
+                mobile_number = mobile_number,
+                body = body,
+                user = user,
+                this_address = False,
+            )
+            new_address.save()
+            return HttpResponseRedirect(reverse("item:address"))
+            
+        return render(requset, self.template_name, {"form":form})

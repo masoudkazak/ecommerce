@@ -1,5 +1,5 @@
 from django import forms
-from .models import Address, Item, Comment, OrderItem
+from .models import *
 
 
 class ItemUpdateForm(forms.ModelForm):
