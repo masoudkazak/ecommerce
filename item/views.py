@@ -16,14 +16,6 @@ class ItemListView(ListView):
     context_object_name = 'items'
     template_name = 'home.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context['baskets'] = Order.objects.filter(user=self.request.user)
-            return context
-        context['baskets'] = None
-        return context
-
 
 class ItemDetailView(View):
     template_name = 'itemdetail.html'
@@ -149,16 +141,11 @@ class ItemCreateView(View):
             return HttpResponseRedirect(reverse('item:list'))
 
         return render(request, self.template_name, {'form': form})
+
     
-
-class BasketView(DetailView):
-    model = Order
-    context_object_name = "order"
-    template_name = "order.html"
-
-    def get_queryset(self):
-        my_order = Order.objects.filter(user=self.request.user)
-        return my_order
+    def get_success_url(self):
+        order = self.get_object()
+        return reverse_lazy("item:basket", args=(order.id,))
 
 
 class AddressView(LoginRequiredMixin ,View):
@@ -185,6 +172,7 @@ class AddressView(LoginRequiredMixin ,View):
     
     def get(self, request, *args, **kwargs):
         if len(self.get_object()) == 0:
+            messages.info(request, "شما آدرسی نساخته اید")
             return redirect('item:addresscreate')
         return render(request, self.template_name, self.get_context_data())
     
@@ -201,6 +189,7 @@ class AddressView(LoginRequiredMixin ,View):
                 else:
                     address.this_address = False
                     address.save()
+            return HttpResponseRedirect(reverse('item:list'))
         return render(request, self.template_name, self.get_context_data(**ctxt))
 
 
@@ -242,3 +231,47 @@ class AddressCreateView(LoginRequiredMixin, View):
             return HttpResponseRedirect(reverse("item:address"))
             
         return render(requset, self.template_name, {"form":form})
+
+
+class BasketView(LoginRequiredMixin ,View):
+    template_name = "basket.html"
+    login_url = "/account/login/"
+
+    def get_object(self):
+        order =Order.objects.filter(user=self.request.user)
+        return order
+    
+    def get_context_data(self, **kwargs):
+        kwargs['orders'] = self.get_object()
+        kwargs['active_address'] = Address.objects.filter(user=self.request.user, this_address=True)
+        return kwargs
+    
+    def get(self, request, *args, **kwargs):
+        if len(self.get_object()) == 0:
+            messages.info(request, "سبد شما خالی است")
+            return redirect('item:list')
+        if not self.get_object()[0].items.all().exists():
+            messages.info(request, "سبد شما خالی است")
+            return redirect('item:list')
+        if not self.get_context_data()['active_address'].exists():
+            if not Address.objects.filter(user=request.user).exists():
+                return redirect("item:addresscreate")
+            return redirect("item:address")
+        return render(request, self.template_name, self.get_context_data())
+    
+    def post(self, request, *args, **kwargs):
+        ctxt = {}
+        item_list = self.get_object()[0].items.all()
+        print(request.POST)
+        for item in item_list:
+            delete = "delete-" + str(item.id)
+            if delete in request.POST:
+                item.delete()
+                return HttpResponseRedirect(reverse("item:basket")) 
+            x = int(request.POST[str(item.id)])
+            item.count = x
+            item.save()
+
+        return HttpResponseRedirect(reverse("item:basket"))
+            
+        return render(request, self.template_name, self.get_context_data(**ctxt))

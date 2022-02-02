@@ -31,4 +31,3 @@ class AddressSelectForm(forms.ModelForm):
     class Meta:
         model = Address
         fields = ['this_address',]
-    

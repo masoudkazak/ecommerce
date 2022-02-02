@@ -1,8 +1,16 @@
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}{% endif %}
+        {{ message }}
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
 {% if request.user.is_authenticated %}
     <h1>{{ request.user.username }}</h1>
-    {% for basket in baskets %}
-        <a href="{% url 'item:basket' basket.id %}">basket</a>
-    {% endfor %}
+    <a href="{% url 'item:basket' %}">basket</a>
     <a href="{% url 'item:address' %}">Address</a>
     <a href="{% url 'account:logout' %}">Logout</a><br>
     <a href="{% url 'account:update' request.user.pk %}">Account</a>
