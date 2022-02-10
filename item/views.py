@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 from django.views import View
 from django.http import HttpResponseRedirect
 from django.contrib import messages
+from account.models import CompanyProfile
 
 
 class ItemListView(ListView):
@@ -61,6 +62,9 @@ class ItemDetailView(View):
                 if count == 0:
                     messages.error(request, "صفر تعداد انتخاب کرده اید")
                     return redirect('item:detail', pk=item.pk)
+                elif count > self.get_object().inventory:
+                    messages.error(request, "بیش از حد ظرفیت موجود")
+                    return redirect('item:detail', pk=item.pk)
 
                 try:      
                     update_orderitem = OrderItem.objects.get(item=item)
@@ -112,6 +116,14 @@ class ItemCreateView(View):
     template_name = 'itemcreate.html'
 
     def get(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            try:
+                cprofile = CompanyProfile.objects.get(user=request.user)
+            except CompanyProfile.DoesNotExist:
+                return redirect("item:list")
+            else:
+                if cprofile.confirm == False:
+                    return redirect("item:list")
         form = self.form_class()
         return render(request, self.template_name, {'form': form})
 
@@ -124,6 +136,7 @@ class ItemCreateView(View):
             body = form.cleaned_data['body']
             images = form.cleaned_data['images']
             tags = form.cleaned_data['tags']
+            inventory = form.cleaned_data['inventory']
             company = request.user
             new_item = Item.objects.create(
                 name = name,
@@ -133,6 +146,7 @@ class ItemCreateView(View):
                 images = images,
                 tags = tags,
                 company = company,
+                inventory=inventory,
             )
             new_item.save()
             return HttpResponseRedirect(reverse('item:list'))
@@ -291,6 +305,9 @@ class BasketView(LoginRequiredMixin ,View):
                 item.delete()
                 return HttpResponseRedirect(reverse("item:basket")) 
             x = int(request.POST[str(item.id)])
+            if x > item.item.inventory:
+                messages.error(request, "بیش از حد ظرفیت موجود")
+                return redirect("item:basket")
             item.count = x
             item.save()
 

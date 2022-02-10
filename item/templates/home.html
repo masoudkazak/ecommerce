@@ -15,14 +15,20 @@
 {% endif %}
 {% if request.user.is_authenticated %}
     <h1>{{ request.user.username }}</h1>
-    <a href="{% url 'item:basket' %}">basket</a>
-    <a href="{% url 'item:address' %}">Address</a>
+    <a href="{% url 'item:basket' %}">basket</a><br>
+    <a href="{% url 'item:address' %}">Address</a><br>
     <a href="{% url 'account:logout' %}">Logout</a><br>
-    <a href="{% url 'account:update' request.user.pk %}">Account</a>
-    {% if request.user.profile %}
+    <a href="{% url 'account:update' request.user.pk %}">Account</a><br>
+    {% if request.user.cprofile and request.user.cprofile.confirm == True %}
+        <a href="{% url 'account:companyprofileupdate' request.user.cprofile.pk %}">Profile</a>
+        <a href="{% url 'item:create' %}">Add Item</a>
+    {% elif request.user.profile %}
         <a href="{% url 'account:profileupdate' request.user.profile.pk %}">Profile</a>
+    {% elif request.user.cprofile %}
+        در انتظار تایید پروفایل
     {% else %}
-        <a href="{% url 'account:profilecreate' request.user.pk %}">Complete the profile</a>
+        <a href="{% url 'account:companyprofilecreate' request.user.pk %}">Create Company Profile</a> |
+        <a href="{% url 'account:profilecreate' request.user.pk %}">Create Profile</a>
     {% endif %}
 {% else %}
     <a href="{% url 'account:login' %}">Login</a><br>
@@ -34,7 +40,11 @@
         <a href="{% url 'item:detail' item.pk %}"><img src="{{ item.images.url }}" height="200" width="200"></a><br>
     {% endif %}
     <h1>{{ item.name }}</h1>
+    {% if item.inventory == 0 %}
+        ناموجود
+    {% else %}
     <h2>{{ item.price }}T</h2>
+    {% endif %}
     <h3>{{ item.company }}</h3>
     <h4>{{ item.category }}</h4>
     <h5>{{ item.body }}</h5>

@@ -19,8 +19,17 @@
         <input type="submit" value="Delete" name="deleteitem">
     </form>
 {% endif %}
-
-{{ item.name }}
+<img src="{{ item.images.url }}" height="250px">
+<h2>{{ item.name }}</h2><br>
+<h6>{{ item.date }}</h6><br>
+<h3>{{ item.company }}</h3>
+{% if item.inventory == 0 %}
+    <h1>ناموجود</h1><br>
+{% else %}
+<h1>{{ item.price }}</h1><br>
+<p>موحودی: {{ item.inventory }}<p><br>
+{% endif %}
+<p>{{ item.body }}</p>
 <hr>
 
 {% for comment in item.comments.all %}

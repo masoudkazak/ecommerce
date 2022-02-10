@@ -1,4 +1,4 @@
-from re import T
+from operator import mod
 from django.db import models
 from django.contrib.auth.models import User
 from item.models import PHONE_NUMBER_REGEX
@@ -16,6 +16,22 @@ class Profile(models.Model):
     phone_number = models.CharField(max_length=11, validators=[PHONE_NUMBER_REGEX], blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     gender = models.CharField(max_length=25, choices=GENDER, blank=True, null=True)
+
+    class Meta:
+        ordering = ['user',]
+
+    def __str__(self):
+        return self.user.username
+
+
+class CompanyProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cprofile')
+    image = models.ImageField(upload_to='Cprofile/%Y/%m/%d/', blank=True, null=True)
+    phone_number = models.CharField(max_length=11, validators=[PHONE_NUMBER_REGEX], blank=True, null=True)
+    home_phone_number = models.CharField(max_length=11, validators=[PHONE_NUMBER_REGEX], blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    address_company = models.TextField()
+    confirm = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['user',]

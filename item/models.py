@@ -1,3 +1,4 @@
+from operator import mod
 from django.db import models
 from django.contrib.auth.models import User
 from taggit.managers import TaggableManager
@@ -26,6 +27,7 @@ class Item(models.Model):
     images = models.ImageField(blank=True, null=True, upload_to='uploads/%Y/%m/%d/')
     date = models.DateTimeField(auto_now_add=True)
     tags = TaggableManager(blank=True)
+    inventory = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-date']

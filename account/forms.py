@@ -1,8 +1,7 @@
 from django.contrib.auth.models import User
 from django import forms
-from django.db.models import fields
 from django.forms import ValidationError
-from .models import Profile
+from .models import *
 
 
 class UserCreateForm(forms.ModelForm):
@@ -43,3 +42,9 @@ class ProfileCreateForm(forms.ModelForm):
     class Meta:
         model = Profile
         exclude = ['user',]
+
+
+class CompanyProfileCreateForm(forms.ModelForm):
+    class Meta:
+        model = CompanyProfile
+        exclude = ['user', "confirm", "likes"]
