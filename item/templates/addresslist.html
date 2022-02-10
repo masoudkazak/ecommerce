@@ -1,3 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Address{% endblock %}
+
+{% block content %}
 <form method="POST">
     {% csrf_token %}
     {% for address in addresses %}
@@ -8,4 +12,4 @@
     <br><input type="submit" value="Change" name="choose">
 </form>
 <a href="{% url 'item:addresscreate' %}"><button>Add Address</button></a>
-
+{% endblock %}

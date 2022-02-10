@@ -1,3 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}{{ item.name }}{% endblock %}
+
+{% block content %}
 {% if messages %}
 <ul class="messages">
     {% for message in messages %}
@@ -8,8 +12,17 @@
     {% endfor %}
 </ul>
 {% endif %}
+
+{% if request.user.is_authenticated and  request.user == item.company %}
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="Delete" name="deleteitem">
+    </form>
+{% endif %}
+
 {{ item.name }}
 <hr>
+
 {% for comment in item.comments.all %}
     {{ comment.user }}<br>
     {{ comment.date }}<br>
@@ -17,6 +30,7 @@
 {% empty %}
     <p>No comment</p>
 {% endfor %}
+
 {% if request.user.is_authenticated %}
     <form method="post">
         {% csrf_token %}
@@ -28,6 +42,7 @@
     <a href="{% url 'account:create' %}">SignUp</a>
 {% endif %}
 <hr>
+
 {% if request.user.is_authenticated %}
 <form method="post">
     {% csrf_token %}
@@ -40,3 +55,4 @@
     <a href="{% url 'account:login' %}"><button type="button">Add</button></a>
 </form>
 {% endif %}
+{% endblock %}

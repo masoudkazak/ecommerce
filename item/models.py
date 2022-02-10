@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 
 
 PHONE_NUMBER_REGEX = RegexValidator(
-    regex="^09\d{9}$",
+    regex="^(\+98|0)?9\d{9}$",
     message="شماره وارد شده اشتباه است\n09123456789",
 )
 

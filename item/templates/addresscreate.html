@@ -1,3 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Create Address{% endblock %}
+
+{% block content %}
 {% if messages %}
 <ul class="messages">
     {% for message in messages %}
@@ -13,3 +17,4 @@
     {{ form.as_p }}
     <input type="submit" value="Create">
 </form>
+{% endblock %}

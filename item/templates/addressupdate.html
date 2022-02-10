@@ -1,9 +1,14 @@
-{% if request.user == address.user %}
+{% extends 'base.html' %}
+{% block title %}Update Address{% endblock %}
+
+{% block content %}
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="update">
 </form>
-{% else %}
-    <h1>You are not allowed</h1>
-{% endif %}
+<form method="post">
+    {% csrf_token %}
+    <input type="submit" value="Delete" name="delete">
+</form>
+{% endblock %}

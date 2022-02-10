@@ -30,7 +30,6 @@ class ItemDetailView(View):
             kwargs['orderitem_form'] = OrderItemForm()
         if 'comment_form' not in kwargs:
             kwargs['comment_form'] = CommentForm()
-
         return kwargs
     
     def get(self, request, *args, **kwargs):
@@ -89,6 +88,11 @@ class ItemDetailView(View):
             else:
                 ctxt['response_form'] = CommentForm
 
+        elif "deleteitem" in request.POST:
+            item = self.get_object()
+            item.delete()
+            return HttpResponseRedirect(reverse("item:list"))
+
         return render(request, self.template_name, self.get_context_data(**ctxt))
 
 
@@ -96,19 +100,12 @@ class ItemUpdateView(UpdateView):
     model = Item
     form_class = ItemUpdateForm
     template_name = 'itemupdate.html'
+    context_object_name = "item"
 
     def get_success_url(self):
         item = self.get_object()
         return reverse_lazy("item:detail", args=(item.id,))
-
-
-class ItemDeleteView(DeleteView):
-    model = Item
-    template_name = 'itemdelete.html'
-
-    def get_success_url(self):
-        return reverse('item:list')
-
+        
 
 class ItemCreateView(View):
     form_class = ItemUpdateForm
@@ -180,16 +177,20 @@ class AddressView(LoginRequiredMixin ,View):
         ctxt = {}
         
         if 'choose' in request.POST:
-            home_address = request.POST['fav-language']
-            select_address = Address.objects.get(home_address=home_address)
-            for address in self.get_object():
-                if select_address == address:
-                    select_address.this_address = True
-                    select_address.save()
-                else:
-                    address.this_address = False
-                    address.save()
-            return HttpResponseRedirect(reverse('item:list'))
+            if 'fav-language' in request.POST:
+                home_address = request.POST['fav-language']
+                select_address = Address.objects.get(home_address=home_address)
+                for address in self.get_object():
+                    if select_address == address:
+                        select_address.this_address = True
+                        select_address.save()
+                    else:
+                        address.this_address = False
+                        address.save()
+                return HttpResponseRedirect(reverse('item:list'))
+            else:
+                messages.info(request, "آدرسی انتخاب نکردید")
+                return redirect("item:address")
         return render(request, self.template_name, self.get_context_data(**ctxt))
 
 
@@ -201,6 +202,18 @@ class AddressUpdateView(LoginRequiredMixin,UpdateView):
 
     def get_success_url(self):
         return reverse("item:address")
+    
+    def post(self, request, *args, **kwargs):
+        if "delete" in request.POST:
+            address = self.get_object()
+            address.delete()
+            return HttpResponseRedirect(reverse("item:address"))
+        return super().post(request, *args, **kwargs)
+    
+    def get(self, request, *args, **kwargs):
+        if request.user != self.get_object().user:
+            return redirect("item:list")
+        return super().get(request, *args, **kwargs)
 
 
 class AddressCreateView(LoginRequiredMixin, View):
@@ -238,30 +251,39 @@ class BasketView(LoginRequiredMixin ,View):
     login_url = "/account/login/"
 
     def get_object(self):
-        order =Order.objects.filter(user=self.request.user)
+        order =Order.objects.get(user=self.request.user)
         return order
     
     def get_context_data(self, **kwargs):
-        kwargs['orders'] = self.get_object()
-        kwargs['active_address'] = Address.objects.filter(user=self.request.user, this_address=True)
+        kwargs['order'] = self.get_object()
+        kwargs['active_address'] = Address.objects.get(user=self.request.user, this_address=True)
         return kwargs
     
     def get(self, request, *args, **kwargs):
-        if len(self.get_object()) == 0:
+        try:
+            self.get_object()
+        except Order.DoesNotExist:
             messages.info(request, "سبد شما خالی است")
             return redirect('item:list')
-        if not self.get_object()[0].items.all().exists():
+
+        if not self.get_object().items.all().exists():
             messages.info(request, "سبد شما خالی است")
             return redirect('item:list')
-        if not self.get_context_data()['active_address'].exists():
-            if not Address.objects.filter(user=request.user).exists():
+
+        try:
+            self.get_context_data()['active_address']
+        except Address.DoesNotExist:
+            if len(Address.objects.filter(user=request.user)) == 0:
+                messages.info(request, "آدرسی نساخته اید")
                 return redirect("item:addresscreate")
+            messages.info(request, "آدرسی انتخاب نکرده اید")
             return redirect("item:address")
+
         return render(request, self.template_name, self.get_context_data())
     
     def post(self, request, *args, **kwargs):
         ctxt = {}
-        item_list = self.get_object()[0].items.all()
+        item_list = self.get_object().items.all()
         print(request.POST)
         for item in item_list:
             delete = "delete-" + str(item.id)

@@ -1,4 +1,7 @@
-{% for order in orders %}
+{% extends 'base.html' %}
+{% block title %}Basket{% endblock %}
+
+{% block content %}
     <form method="POST">
         {% csrf_token %}
         {% for orderitem in order.items.all %}
@@ -13,9 +16,7 @@
         <input type="submit" value="Change">
     </from><hr>
     <h3>Your Address:</h3>
-    {% for a in active_address %}
-        {{ a.home_address }}<br>
-        <a href="{% url 'item:addressupdate' a.pk %}">Edit</a><br>
+        {{ active_address.home_address }}<br>
+        <a href="{% url 'item:addressupdate' active_address.pk %}">Edit</a><br>
         <a href="{% url 'item:address' %}">Choose another address</a>
-        {% endfor %}
-{% endfor %}
+{% endblock %}
