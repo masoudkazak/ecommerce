@@ -29,6 +29,9 @@
 <h1>{{ item.price }}</h1><br>
 <p>موحودی: {{ item.inventory }}<p><br>
 {% endif %}
+{% for color in item.color.all %}
+    <h2>{{ color }}</h2>
+{% endfor %}
 <p>{{ item.body }}</p>
 <hr>
 

@@ -1,4 +1,4 @@
-from operator import mod
+from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import User
 from taggit.managers import TaggableManager
@@ -18,6 +18,13 @@ class Category(models.Model):
         return self.name
 
 
+class ColorItem(models.Model):
+    color = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.color
+
+
 class Item(models.Model):
     name = models.CharField(max_length=250)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True)
@@ -28,9 +35,19 @@ class Item(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     tags = TaggableManager(blank=True)
     inventory = models.PositiveIntegerField(default=0)
+    color = models.ManyToManyField(ColorItem)
+    discount = models.FloatField(blank=True, null=True)
 
     class Meta:
         ordering = ['-date']
+    
+    def final_price(self):
+        print(type(float(self.price)), float(self.price))
+        print(type(self.discount), self.discount)
+        if self.discount:
+            d_price = int((1 - (float(self.discount) * 0.01)) * float(self.price))
+            return d_price
+        return self.price
 
     def __str__(self):
         return f"{self.name} - {self.category}" 
@@ -80,7 +97,7 @@ class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     zip_code = models.CharField(max_length=250)
     home_address = models.TextField()
-    mobile_number = models.CharField(max_length=20, validators=[PHONE_NUMBER_REGEX])
+    mobile_number = models.CharField(max_length=13, validators=[PHONE_NUMBER_REGEX])
     body = models.TextField(null=True, blank=True)
     this_address = models.BooleanField(default=False)
 

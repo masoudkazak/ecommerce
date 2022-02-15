@@ -137,6 +137,7 @@ class ItemCreateView(View):
             images = form.cleaned_data['images']
             tags = form.cleaned_data['tags']
             inventory = form.cleaned_data['inventory']
+            colors = form.cleaned_data['color']
             company = request.user
             new_item = Item.objects.create(
                 name = name,
@@ -149,6 +150,13 @@ class ItemCreateView(View):
                 inventory=inventory,
             )
             new_item.save()
+            item = Item.objects.get(name = name,
+                price = price,
+                company = company,
+                inventory=inventory,
+                )
+            for color in colors:
+                item.color.add(color)
             return HttpResponseRedirect(reverse('item:list'))
 
         return render(request, self.template_name, {'form': form})

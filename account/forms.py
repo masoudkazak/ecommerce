@@ -47,4 +47,4 @@ class ProfileCreateForm(forms.ModelForm):
 class CompanyProfileCreateForm(forms.ModelForm):
     class Meta:
         model = CompanyProfile
-        exclude = ['user', "confirm", "likes"]
+        exclude = ['user', "confirm",]

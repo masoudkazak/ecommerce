@@ -5,7 +5,7 @@ from .models import *
 class ItemUpdateForm(forms.ModelForm):
     class Meta:
         model = Item
-        exclude = ['date', 'company']
+        exclude = ['date', 'company', "discount",]
 
 
 class CommentForm(forms.ModelForm):

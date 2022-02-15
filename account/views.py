@@ -1,4 +1,5 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404, render
+from django.views import View
 from django.views.generic import (
     CreateView,
     UpdateView,
@@ -39,35 +40,54 @@ class UserUpdateView(UpdateView):
         return reverse('item:list')
     
 
-class ProfielCreateView(ModelFormMixin ,DetailView):
-    model = User
-    context_object_name = 'user'
+class ProfielCreateView(View):
+    # model = User
+    # context_object_name = 'user'
     template_name = 'profile-create.html'
-    form_class = ProfileCreateForm
+    # form_class = ProfileCreateForm
+    
+    def get_object(self):
+        user = get_object_or_404(User, pk=self.kwargs['pk'])
+        return user
+    
+    def get_context_data(self, **kwargs):
+        kwargs['user'] = self.get_object()
+        if "form" not in kwargs:
+            kwargs['form'] = ProfileCreateForm
+        return kwargs
+    
+    def get(self, request, *args, **kwargs):
+        if self.get_object() != request.user:
+            return redirect("item:list")
+        try:
+            CompanyProfile.objects.get(user=request.user)
+        except CompanyProfile.DoesNotExist:
+            return render(request, self.template_name, self.get_context_data())
+        else:
+            return redirect("item:list")
     
     def post(self, request, *args, **kwargs):
-        form = self.get_form()
+        ctxt = {}
+        form = ProfileCreateForm(request.POST)
         if form.is_valid():
             image = form.cleaned_data['image']
             phone_number = form.cleaned_data['phone_number']
             bio = form.cleaned_data['bio']
             gender = form.cleaned_data['gender']
             user = self.get_object()
-            new_profile = Profile(user=user,
-                                image=image,
-                                phone_number=phone_number,
-                                bio=bio,
-                                gender=gender)
+            new_profile = Profile(
+                image = image,
+                phone_number = phone_number,
+                bio = bio,
+                gender = gender,
+                user = user,
+            )
             new_profile.save()
             return HttpResponseRedirect(reverse("item:list"))
-    def get(self, request, *args, **kwargs):
-        try:
-            CompanyProfile.objects.get(user=request.user)
-        except CompanyProfile.DoesNotExist:
-            return super().get(request, *args, **kwargs)
         else:
-            return redirect("item:list")
-            
+            ctxt['form'] = CompanyProfileCreateForm
+        return render(request, self.template_name, self.get_context_data(**ctxt))
+
 
 class ProfileUpdateView(UpdateView):
     model = Profile
@@ -85,14 +105,27 @@ class UserPasswordChangeView(PasswordChangeView):
         return reverse('account:login')
 
 
-class CompanyProfielCreateView(ModelFormMixin ,DetailView):
-    model = User
-    context_object_name = 'user'
+class CompanyProfielCreateView(View):
     template_name = 'cprofile-create.html'
-    form_class = CompanyProfileCreateForm
+
+    def get_object(self):
+        user = get_object_or_404(User, pk=self.kwargs['pk'])
+        return user
+    
+    def get_context_data(self, **kwargs):
+        kwargs['user'] = self.get_object()
+        if "form" not in kwargs:
+            kwargs['form'] = CompanyProfileCreateForm()
+        return kwargs
+    
+    def get(self, request, *args, **kwargs):
+        if self.get_object() != request.user:
+            return redirect("item:list")
+        return render(request, self.template_name, self.get_context_data())
     
     def post(self, request, *args, **kwargs):
-        form = self.get_form()
+        ctxt = {}
+        form = CompanyProfileCreateForm(request.POST)
         if form.is_valid():
             image = form.cleaned_data['image']
             phone_number = form.cleaned_data['phone_number']
@@ -113,6 +146,10 @@ class CompanyProfielCreateView(ModelFormMixin ,DetailView):
                 return HttpResponseRedirect(reverse("item:list"))
             profile.delete()
             return HttpResponseRedirect(reverse("item:list"))
+        else:
+            ctxt['form'] = CompanyProfileCreateForm
+
+        return render(request, self.template_name, self.get_context_data(**ctxt))
 
 
 class CompanyProfileUpdateView(UpdateView):
