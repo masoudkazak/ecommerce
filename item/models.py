@@ -1,4 +1,5 @@
 from decimal import Decimal
+from operator import mod
 from django.db import models
 from django.contrib.auth.models import User
 from taggit.managers import TaggableManager
@@ -25,13 +26,21 @@ class ColorItem(models.Model):
         return self.color
 
 
+class Uploadimage(models.Model):
+    image = models.ImageField(upload_to='uploads/%Y/%m/%d/')
+    item_id = models.CharField(max_length=10, blank=True, null=True)
+
+    def __str__(self):
+        return self.item_id
+
+
 class Item(models.Model):
     name = models.CharField(max_length=250)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True)
     company = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     price = models.BigIntegerField()
     body = models.TextField()
-    images = models.ImageField(blank=True, null=True, upload_to='uploads/%Y/%m/%d/')
+    images = models.ManyToManyField(Uploadimage, blank=True, null=True)
     date = models.DateTimeField(auto_now_add=True)
     tags = TaggableManager(blank=True)
     inventory = models.PositiveIntegerField(default=0)
@@ -42,8 +51,6 @@ class Item(models.Model):
         ordering = ['-date']
     
     def final_price(self):
-        print(type(float(self.price)), float(self.price))
-        print(type(self.discount), self.discount)
         if self.discount:
             d_price = int((1 - (float(self.discount) * 0.01)) * float(self.price))
             return d_price
@@ -72,7 +79,7 @@ class OrderItem(models.Model):
     count = models.PositiveIntegerField(default=1)
 
     def get_price(self):
-        return self.item.price * self.count
+        return self.item.final_price() * self.count
 
     def __str__(self):
         return f"{self.customer} - {self.item}"

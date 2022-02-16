@@ -19,14 +19,21 @@
         <input type="submit" value="Delete" name="deleteitem">
     </form>
 {% endif %}
-<img src="{{ item.images.url }}" height="250px">
+{% if item.images %}
+    {% for image in item.images.all %}
+        <img src="{{ image.image.url }}" width="250">
+    {% endfor %}
+{% endif %}
 <h2>{{ item.name }}</h2><br>
 <h6>{{ item.date }}</h6><br>
 <h3>{{ item.company }}</h3>
 {% if item.inventory == 0 %}
     <h1>ناموجود</h1><br>
 {% else %}
-<h1>{{ item.price }}</h1><br>
+    {% if item.discount %}
+        <h1 style="color:red;">{{ item.discount }}%</h1>      
+    {% endif %}
+    <h2>{{ item.final_price }}</h2>
 <p>موحودی: {{ item.inventory }}<p><br>
 {% endif %}
 {% for color in item.color.all %}

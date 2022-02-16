@@ -1,3 +1,4 @@
+from tkinter import Widget
 from django import forms
 from .models import *
 
@@ -5,8 +6,8 @@ from .models import *
 class ItemUpdateForm(forms.ModelForm):
     class Meta:
         model = Item
-        exclude = ['date', 'company', "discount",]
-
+        exclude = ['date', 'company', "discount", "images",]
+        
 
 class CommentForm(forms.ModelForm):
     class Meta:

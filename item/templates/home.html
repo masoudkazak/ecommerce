@@ -38,17 +38,15 @@
 {% endif %}
 <hr>
 {% for item in items %}
-    {% if item.images %}
-        <a href="{% url 'item:detail' item.pk %}"><img src="{{ item.images.url }}" height="200" width="200"></a><br>
-    {% endif %}
-    <h1>{{ item.name }}</h1>
+    <a href="{% url 'item:detail' item.pk %}"><img src="{{ item.images.all.0.image.url }}" height="200"></a>
+    <a href="{% url 'item:detail' item.pk %}"><h1>{{ item.name }}</h1></a>
     {% if item.inventory == 0 %}
         ناموجود
     {% else %}
         {% if item.discount %}
             <h1 style="color:red;">{{ item.discount }}%</h1>      
         {% endif %}
-        {{ item.final_price }}
+        <h2>{{ item.final_price }}</h2>
     {% endif %}
     <h3>{{ item.company }}</h3>
     <h4>{{ item.category }}</h4>

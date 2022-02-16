@@ -128,23 +128,23 @@ class ItemCreateView(View):
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST, request.FILES)
+        form = self.form_class(request.POST)
+        images = request.FILES.getlist("images")
         if form.is_valid():
             name = form.cleaned_data['name']
             category = form.cleaned_data['category']
             price = form.cleaned_data['price']
             body = form.cleaned_data['body']
-            images = form.cleaned_data['images']
             tags = form.cleaned_data['tags']
             inventory = form.cleaned_data['inventory']
             colors = form.cleaned_data['color']
             company = request.user
-            new_item = Item.objects.create(
+        
+            new_item = Item(
                 name = name,
                 category = category,
                 price = price,
                 body = body,
-                images = images,
                 tags = tags,
                 company = company,
                 inventory=inventory,
@@ -155,8 +155,16 @@ class ItemCreateView(View):
                 company = company,
                 inventory=inventory,
                 )
+            for image in images:
+                Uploadimage.objects.create(image=image, item_id=item.id)
+
             for color in colors:
                 item.color.add(color)
+
+            images_list = Uploadimage.objects.filter(item_id=item.id)
+
+            for image in images_list:
+                item.images.add(image)
             return HttpResponseRedirect(reverse('item:list'))
 
         return render(request, self.template_name, {'form': form})

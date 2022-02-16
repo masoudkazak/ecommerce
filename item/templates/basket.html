@@ -15,9 +15,9 @@
     <form method="POST">
         {% csrf_token %}
         {% for orderitem in order.items.all %}
-            <img src="{{ orderitem.item.images.url }}" width="25px" height="25px">
+            <a href="{% url 'item:detail' orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" width="25px" height="25px"></a>
             {{ orderitem.item.name }} |
-            {{ orderitem.item.price }} |
+            {{ orderitem.item.final_price }} |
             <label for="{{ orderitem.id }}"></label>
             <input type="number" id="{{ orderitem.id }}" name="{{ orderitem.id }}" min="1" value={{ orderitem.count }}>
             <a href="#"><input type="submit" name="delete-{{ orderitem.id }}" value="Delete"></a><br><br>
