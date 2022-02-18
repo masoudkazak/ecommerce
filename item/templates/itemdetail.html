@@ -39,13 +39,13 @@
 {% for color in item.color.all %}
     <h2>{{ color }}</h2>
 {% endfor %}
-<p>{{ item.body }}</p>
+<p>{{ item.body|safe }}</p>
 <hr>
 
 {% for comment in item.comments.all %}
     {{ comment.user }}<br>
     {{ comment.date }}<br>
-    {{ comment.text }}<br><hr>
+    {{ comment.text|safe }}<br><hr>
 {% empty %}
     <p>No comment</p>
 {% endfor %}
@@ -53,6 +53,7 @@
 {% if request.user.is_authenticated %}
     <form method="post">
         {% csrf_token %}
+        {{ comment_form.media }}
         {{ comment_form.as_p }}
         <input type="submit" value="comment" name="comment">
     </form>

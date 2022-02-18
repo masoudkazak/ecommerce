@@ -22,9 +22,9 @@
             <input type="number" id="{{ orderitem.id }}" name="{{ orderitem.id }}" min="1" value={{ orderitem.count }}>
             <a href="#"><input type="submit" name="delete-{{ orderitem.id }}" value="Delete"></a><br><br>
         {% endfor %}
-        total : {{ order.get_price }}<br><br>
         <input type="submit" value="Change">
     </from><hr>
+    total : {{ order.get_price }}<br><br>
     <h3>Your Address:</h3>
         {{ active_address.home_address }}<br>
         <a href="{% url 'item:addressupdate' active_address.pk %}">Edit</a><br>

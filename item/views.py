@@ -312,9 +312,7 @@ class BasketView(LoginRequiredMixin ,View):
         return render(request, self.template_name, self.get_context_data())
     
     def post(self, request, *args, **kwargs):
-        ctxt = {}
         item_list = self.get_object().items.all()
-        print(request.POST)
         for item in item_list:
             delete = "delete-" + str(item.id)
             if delete in request.POST:
@@ -328,5 +326,3 @@ class BasketView(LoginRequiredMixin ,View):
             item.save()
 
         return HttpResponseRedirect(reverse("item:basket"))
-            
-        return render(request, self.template_name, self.get_context_data(**ctxt))

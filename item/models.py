@@ -1,9 +1,8 @@
-from decimal import Decimal
-from operator import mod
 from django.db import models
 from django.contrib.auth.models import User
 from taggit.managers import TaggableManager
 from django.core.validators import RegexValidator
+from ckeditor.fields import RichTextField
 
 
 PHONE_NUMBER_REGEX = RegexValidator(
@@ -39,9 +38,10 @@ class Item(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True)
     company = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     price = models.BigIntegerField()
-    body = models.TextField()
-    images = models.ManyToManyField(Uploadimage, blank=True, null=True)
+    body = RichTextField()
+    images = models.ManyToManyField(Uploadimage, blank=True)
     date = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
     tags = TaggableManager(blank=True)
     inventory = models.PositiveIntegerField(default=0)
     color = models.ManyToManyField(ColorItem)
@@ -63,7 +63,7 @@ class Item(models.Model):
 class Comment(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
-    text = models.TextField()
+    text = RichTextField()
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -107,6 +107,8 @@ class Address(models.Model):
     mobile_number = models.CharField(max_length=13, validators=[PHONE_NUMBER_REGEX])
     body = models.TextField(null=True, blank=True)
     this_address = models.BooleanField(default=False)
+    province = models.CharField(max_length=100, default="تهران")
+    city = models.CharField(max_length=100, default="تهران")
 
     def __str__(self):
         return f"{self.user} - {self.mobile_number}"
