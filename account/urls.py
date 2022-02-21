@@ -17,5 +17,6 @@ urlpatterns = [
     path('passwordchange/', UserPasswordChangeView.as_view(), name='passwordchange'),
     path('cprofile/create/<int:pk>/', CompanyProfielCreateView.as_view(), name='companyprofilecreate'),
     path('cprofile/update/<int:pk>/', CompanyProfileUpdateView.as_view(), name='companyprofileupdate'),
+    path("dashboard/", DashboardView.as_view(), name="dashboard"),
 ]
 

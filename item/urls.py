@@ -12,5 +12,6 @@ urlpatterns = [
     path("address/", AddressView.as_view(), name="address"),
     path("address/<int:pk>/", AddressUpdateView.as_view(), name="addressupdate"),
     path("address/create/", AddressCreateView.as_view(), name="addresscreate"),
-    path("basket/", BasketView.as_view(), name="basket")
+    path("basket/", BasketView.as_view(), name="basket"),
+    path("myitem/", MyItemListView.as_view(), name="myitem"),
 ]

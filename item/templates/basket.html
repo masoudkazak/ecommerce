@@ -1,32 +1,43 @@
-{% extends 'base.html' %}
-{% block title %}Basket{% endblock %}
+{% extends 'dashboard.html' %}
 
-{% block content %}
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}{% endif %}
-            {{ message }}
-        </li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+{% block dcontent %}
+<div class="col">
     <form method="POST">
         {% csrf_token %}
         {% for orderitem in order.items.all %}
-            <a href="{% url 'item:detail' orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" width="25px" height="25px"></a>
-            {{ orderitem.item.name }} |
-            {{ orderitem.item.final_price }} |
-            <label for="{{ orderitem.id }}"></label>
-            <input type="number" id="{{ orderitem.id }}" name="{{ orderitem.id }}" min="1" value={{ orderitem.count }}>
-            <a href="#"><input type="submit" name="delete-{{ orderitem.id }}" value="Delete"></a><br><br>
-        {% endfor %}
-        <input type="submit" value="Change">
+        <div class="col">
+          <table class="table table-striped">
+            <tbody>
+              <tr>
+                <th scope="row"><a href="{% url 'item:detail' orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" height="50px"></a></th>
+                <td>{{ orderitem.item.name }}</td>
+                <td>{{ orderitem.item.final_price }} تومان</td>
+                <td>
+                  <label for="{{ orderitem.id }}"></label>
+                  <input class="form-control" type="number" id="{{ orderitem.id }}" name="{{ orderitem.id }}" min="1" value={{ orderitem.count }}>
+                </td>
+                <td>
+                  <a href="#"><input type="submit" name="delete-{{ orderitem.id }}" value="حذف" class="btn btn-danger"></a><br>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        {% endfor %}<br>
+        <input type="submit" value="ثبت" class="btn btn-primary">
     </from><hr>
-    total : {{ order.get_price }}<br><br>
-    <h3>Your Address:</h3>
-        {{ active_address.home_address }}<br>
-        <a href="{% url 'item:addressupdate' active_address.pk %}">Edit</a><br>
-        <a href="{% url 'item:address' %}">Choose another address</a>
+    <div class="card">
+        <div class="card-header">
+          قیمت پرداختی و آدرس ارسالی
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">آدرس</h5>
+          <p class="card-text">{{ active_address.home_address }}</p>
+          <a href="{% url 'item:addressupdate' active_address.pk %}" class="btn btn-primary">ویرایش آدرس</a>
+          <a href="{% url 'item:address' %}" class="btn btn-primary">انتخاب آدرس دیگر</a><br><br>
+          <h5 class="card-title">قیمت کل</h5>
+          <h6 class="card-title">پرداخت : {{ order.get_price }} تومان</h6><br>
+          <a href="#" class="btn btn-success">پرداخت</a><br><br>
+        </div>
+      </div><br>
+</div>
 {% endblock %}

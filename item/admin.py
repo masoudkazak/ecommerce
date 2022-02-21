@@ -5,7 +5,7 @@ from .models import *
 
 @admin.register(Item)
 class Admin(admin.ModelAdmin):
-    list_display = ("name", "company", "price", "updated", "category",)
+    list_display = ("name", "company", "price", "updated", "category", "status")
     list_filter = ("category",)
     ordering = ["updated",]
     search_fields = ["name", "company__username",]
@@ -18,7 +18,13 @@ class Admin(admin.ModelAdmin):
         (None, {"fields": ("body",)}),
         (None, {"fields": ("tags",)}),
         (None, {"fields": ("discount",)}),
+        (None, {"fields": ("status",)}),
     )
+    actions = ['make_published']
+
+    @admin.action(description="انتشار")
+    def make_published(self, request, queryset):
+        queryset.update(status="p")
 
 
 @admin.register(Comment)
@@ -55,7 +61,7 @@ class Admin(admin.ModelAdmin):
     search_filter = ['user__username', "mobile_number", "city"]
     actions = ['make_active_address']
 
-    @admin.action(description="Active Address")
+    @admin.action(description="غیرفعال کردن آدرس")
     def make_active_address(self, request, queryset):
         queryset.update(this_address=False)
 

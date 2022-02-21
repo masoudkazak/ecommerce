@@ -1,14 +1,15 @@
-{% extends 'base.html' %}
-{% block title %}Update Address{% endblock %}
+{% extends 'dashboard.html' %}
 
-{% block content %}
+{% block dcontent %}
+<div class="col-6">
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" value="update">
-</form>
+    <input type="submit" value="update" class="btn btn-primary">
+</form><br>
 <form method="post">
     {% csrf_token %}
-    <input type="submit" value="Delete" name="delete">
-</form>
+    <input type="submit" value="Delete" name="delete" class="btn btn-danger">
+</form><br>
+</div>
 {% endblock %}

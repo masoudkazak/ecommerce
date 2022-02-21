@@ -1,12 +1,13 @@
-{% extends 'base.html' %}
-{% block title %}Create Item{% endblock %}
+{% extends 'dashboard.html' %}
 
-{% block content %}
+{% block dcontent %}
+<div class="col-3">
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.media }}
     {{ form.as_p }}
-    <input type="file" multiple name="images"><br><br>
-    <input type="submit" value="create">
+    <input type="file" multiple name="images" class="form-control"><br><br>
+    <input type="submit" value="create" class="btn btn-primary">
 </form>
+</div>
 {% endblock %}

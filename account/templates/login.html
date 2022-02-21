@@ -2,10 +2,22 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<form method='POST'>
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type='submit' value="Login"><br>
-    <a href="{% url 'account:create' %}">SignUp</a>
-</form>
+<br><br><br><br><br>
+<div class="row">
+    <div class="col">
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <form method='POST'>
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type='submit' value="ورود" class="btn btn-primary"><br>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+    </div>
+</div>
 {% endblock %}

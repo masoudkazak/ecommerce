@@ -3,55 +3,41 @@
 {% block title %}Home{% endblock title %}
 
 {% block content %}
-{% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-        {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}{% endif %}
-        {{ message }}
-    </li>
+<br><div class="row row-cols-1 row-cols-md-4 g-4">
+    {% for item in items %}
+    <div class="col">
+      <div class="card h-100">
+        <a href="{% url 'item:detail' item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top"></a>
+          <h4>{{ item.name }}</h4>
+          <h6>{{ item.category }}</h6>
+          <p>{{ item.body|safe }}</p>
+        <div class="card-footer">
+          {% if item.inventory == 0 %}
+          <h5 class="text-muted">نا موجود</h5>
+          {% else %}
+            {% if item.discount %}
+                <h5 style="color:red;">{{ item.int_discount }}%</h5>      
+            {% endif %}
+          <h5>{{ item.final_price }} تومان</h5>
+          {% endif %}
+        </div>
+      </div>
+    </div>
     {% endfor %}
-</ul>
-{% endif %}
-{% if request.user.is_authenticated %}
-    <h1>{{ request.user.username }}</h1>
-    <a href="{% url 'item:basket' %}">basket</a><br>
-    <a href="{% url 'item:address' %}">Address</a><br>
-    <a href="{% url 'account:logout' %}">Logout</a><br>
-    <a href="{% url 'account:update' request.user.pk %}">Account</a><br>
-    {% if request.user.cprofile and request.user.cprofile.confirm == True %}
-        <a href="{% url 'account:companyprofileupdate' request.user.cprofile.pk %}">Profile</a>
-        <a href="{% url 'item:create' %}">Add Item</a>
-    {% elif request.user.profile %}
-        <a href="{% url 'account:profileupdate' request.user.profile.pk %}">Profile</a><br>
-        <a href="{% url 'account:companyprofilecreate' request.user.pk %}">Create Company Profile</a>
-    {% elif request.user.cprofile %}
-        در انتظار تایید پروفایل<br>
-        <a href="{% url 'account:companyprofileupdate' request.user.cprofile.pk %}">Profile</a>
-    {% else %}
-        <a href="{% url 'account:companyprofilecreate' request.user.pk %}">Create Company Profile</a> |
-        <a href="{% url 'account:profilecreate' request.user.pk %}">Create Profile</a>
-    {% endif %}
-{% else %}
-    <a href="{% url 'account:login' %}">Login</a><br>
-    <a href="{% url 'account:create' %}">Create Account</a>
-{% endif %}
-<hr>
-{% for item in items %}
-    <a href="{% url 'item:detail' item.pk %}"><img src="{{ item.images.all.0.image.url }}" height="200"></a>
-    <a href="{% url 'item:detail' item.pk %}"><h1>{{ item.name }}</h1></a>
-    {% if item.inventory == 0 %}
-        ناموجود
-    {% else %}
-        {% if item.discount %}
-            <h1 style="color:red;">{{ item.discount }}%</h1>      
-        {% endif %}
-        <h2>{{ item.final_price }}</h2>
-    {% endif %}
-    <h3>{{ item.company }}</h3>
-    <h4>{{ item.category }}</h4>
-    <h5>{{ item.body|safe }}</h5>
-    <h6>{{ item.date }}</h6>
-    <hr>
-{% endfor %}
+  </div><br>
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+      {% endif %}
+
+      {% for n in page_obj.paginator.page_range %}
+        <li class="page-item"><a class="page-link" href="?page={{ n }}">{{ n }}</a></li>
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+      {% endif %}
+    </ul>
+  </nav>
 {% endblock content %}

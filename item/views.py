@@ -1,3 +1,4 @@
+from this import d
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404
 from django.urls.base import reverse_lazy
@@ -13,9 +14,10 @@ from account.models import CompanyProfile
 
 
 class ItemListView(ListView):
-    model = Item
+    queryset = Item.objects.filter(status="p")
     context_object_name = 'items'
     template_name = 'home.html'
+    paginate_by = 8
 
 
 class ItemDetailView(View):
@@ -34,6 +36,8 @@ class ItemDetailView(View):
         return kwargs
     
     def get(self, request, *args, **kwargs):
+        if self.get_object().status == "d":
+            return redirect("item:list")
         return render(request, self.template_name, self.get_context_data())
     
     def post(self, request, *args, **kwargs):
@@ -165,14 +169,14 @@ class ItemCreateView(View):
 
             for image in images_list:
                 item.images.add(image)
-            return HttpResponseRedirect(reverse('item:list'))
+            return HttpResponseRedirect(reverse('account:dashboard'))
 
         return render(request, self.template_name, {'form': form})
 
     
-    def get_success_url(self):
-        order = self.get_object()
-        return reverse_lazy("item:basket", args=(order.id,))
+    # def get_success_url(self):
+    #     order = self.get_object()
+    #     return reverse_lazy("item:basket", args=(order.id,))
 
 
 class AddressView(LoginRequiredMixin ,View):
@@ -217,7 +221,7 @@ class AddressView(LoginRequiredMixin ,View):
                     else:
                         address.this_address = False
                         address.save()
-                return HttpResponseRedirect(reverse('item:list'))
+                return HttpResponseRedirect(reverse('item:address'))
             else:
                 messages.info(request, "آدرسی انتخاب نکردید")
                 return redirect("item:address")
@@ -247,7 +251,7 @@ class AddressUpdateView(LoginRequiredMixin,UpdateView):
 
 
 class AddressCreateView(LoginRequiredMixin, View):
-    form_class = AddressUpdateForm
+    form_class = AddressCreateForm
     template_name = "addresscreate.html"
     
     def get(self, request, *args, **kwargs):
@@ -255,11 +259,12 @@ class AddressCreateView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'form': form})
     
     def post(self, requset, *args, **kwargs):
-        form = AddressUpdateForm(requset.POST)
+        form = AddressCreateForm(requset.POST)
         if form.is_valid():
             zip_code = form.cleaned_data['zip_code']
             home_address = form.cleaned_data['home_address']
             mobile_number = form.cleaned_data['mobile_number']
+            mobile_number = "09" + mobile_number[-9:]
             body = form.cleaned_data['body']
             user = requset.user
             new_address = Address.objects.create(
@@ -294,11 +299,11 @@ class BasketView(LoginRequiredMixin ,View):
             self.get_object()
         except Order.DoesNotExist:
             messages.info(request, "سبد شما خالی است")
-            return redirect('item:list')
+            return redirect('account:dashboard')
 
         if not self.get_object().items.all().exists():
             messages.info(request, "سبد شما خالی است")
-            return redirect('item:list')
+            return redirect('account:dashboard')
 
         try:
             self.get_context_data()['active_address']
@@ -326,3 +331,13 @@ class BasketView(LoginRequiredMixin ,View):
             item.save()
 
         return HttpResponseRedirect(reverse("item:basket"))
+
+
+class MyItemListView(LoginRequiredMixin, ListView):
+    template_name = "my_item.html"
+    context_object_name = "items"
+    
+    def get_queryset(self):
+        items = Item.objects.filter(company=self.request.user).order_by("-status")
+        return items
+    

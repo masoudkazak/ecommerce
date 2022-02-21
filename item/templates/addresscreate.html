@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
-{% block title %}Create Address{% endblock %}
+{% extends 'dashboard.html' %}
 
-{% block content %}
+{% block dcontent %}
+<div class="col-6">
 {% if messages %}
 <ul class="messages">
     {% for message in messages %}
@@ -15,6 +15,7 @@
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" value="Create">
-</form>
+    <input type="submit" value="Create" class="btn btn-primary">
+</form><br>
+</div>
 {% endblock %}
