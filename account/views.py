@@ -13,6 +13,8 @@ from django.urls import reverse
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.http import HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.contrib.auth import logout
 
 
 class DashboardView(LoginRequiredMixin, View):
@@ -28,6 +30,7 @@ class UserCreationView(CreateView):
     form_class = UserCreateForm
 
     def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "ثبت نام شما با موفقیت انجام شد")
         return reverse('account:login')
 
 
@@ -36,7 +39,8 @@ class UserLoginView(LoginView):
     form_class = UserLoginForm
 
     def get_success_url(self):
-        return reverse('account:dashboard')
+        messages.add_message(self.request, messages.SUCCESS, "شما وارد سایت شدید.")
+        return reverse('item:list')
     
 
 class UserUpdateView(UpdateView):
@@ -45,8 +49,9 @@ class UserUpdateView(UpdateView):
     form_class = UserUpdateForm
 
     def get_success_url(self):
-        if request.user != self.get_object():
+        if self.request.user != self.get_object():
             return redirect("item:list")
+        messages.add_message(self.request, messages.SUCCESS, "اکانت با موفقیت ویرایش شد.")
         return reverse('account:dashboard')
     
 
@@ -95,6 +100,7 @@ class ProfielCreateView(View):
                 user = user,
             )
             new_profile.save()
+            messages.success(request, "پروفایل با موفقیت ثبت شد")
             return HttpResponseRedirect(reverse("account:dashboard"))
         else:
             ctxt['form'] = ProfileCreateForm
@@ -107,6 +113,7 @@ class ProfileUpdateView(UpdateView):
     form_class = ProfileUpdateForm
 
     def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "پروفایل با موفقیت ویرایش شد")
         return reverse('account:dashboard')
 
 
@@ -115,6 +122,8 @@ class UserPasswordChangeView(PasswordChangeView):
     form_class = UserPasswordChangeForm
     
     def get_success_url(self):
+        logout(self.request)
+        messages.add_message(self.request, messages.SUCCESS, "گذرواژه با موفقیت تغییر کرد")
         return reverse('account:login')
 
 
@@ -141,7 +150,6 @@ class CompanyProfielCreateView(View):
         form = CompanyProfileCreateForm(request.POST, request.FILES)
         if form.is_valid():
             image = form.cleaned_data['image']
-            print(image)
             phone_number = form.cleaned_data['phone_number']
             phone_number = "09" + phone_number[-9:]
             home_phone_number = form.cleaned_data['home_phone_number']
@@ -160,8 +168,10 @@ class CompanyProfielCreateView(View):
             try:
                 profile = Profile.objects.get(user=request.user)
             except Profile.DoesNotExist:
+                messages.success(request, "ثبت نام با موفقیت انجام شد. پس از تایید پروفایل می توایند محصول اضافه کنید.")
                 return HttpResponseRedirect(reverse("account:dashboard"))
             profile.delete()
+            messages.success(request, "ثبت نام با موفقیت انجام شد. پس از تایید پروفایل می توایند محصول اضافه کنید.")
             return HttpResponseRedirect(reverse("account:dashboard"))
         else:
             ctxt['form'] = CompanyProfileCreateForm
@@ -175,4 +185,5 @@ class CompanyProfileUpdateView(UpdateView):
     form_class = CompanyProfileUpdateForm
 
     def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "پروفایل با موفقیت ویرایش شد")
         return reverse('account:dashboard')

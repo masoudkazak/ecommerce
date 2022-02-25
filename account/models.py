@@ -6,9 +6,8 @@ from django.core.validators import RegexValidator
 
 
 GENDER = (
-    ("MALE", "Male"),
-    ("FEMALE", "Female"),
-    ("RNS", "Rather not say"),
+    ("MALE", "مرد"),
+    ("FEMALE", "زن"),
 )
 
 REGEX_HOME_PHONE_NUMBER = RegexValidator(
@@ -36,8 +35,8 @@ class Profile(models.Model):
 class CompanyProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cprofile', verbose_name="شرکت")
     image = models.ImageField(upload_to='Cprofile/%Y/%m/%d/', blank=True, null=True, verbose_name="عکس پروفال")
-    phone_number = models.CharField(max_length=13, validators=[PHONE_NUMBER_REGEX], blank=True, null=True,unique=True, verbose_name="شماره موبایل")
-    home_phone_number = models.CharField(max_length=13, validators=[REGEX_HOME_PHONE_NUMBER], blank=True, null=True,unique=True, verbose_name="شماره تلغن شرکت")
+    phone_number = models.CharField(max_length=13, validators=[PHONE_NUMBER_REGEX], default=None, unique=True, verbose_name="شماره موبایل")
+    home_phone_number = models.CharField(max_length=13, validators=[REGEX_HOME_PHONE_NUMBER], default=None, unique=True, verbose_name="شماره تلفن شرکت")
     bio = RichTextField(blank=True, null=True, verbose_name="درمورد شرکت")
     address_company = models.TextField(verbose_name="آدرس")
     confirm = models.BooleanField(default=False, verbose_name="تاییدیه شرکت")

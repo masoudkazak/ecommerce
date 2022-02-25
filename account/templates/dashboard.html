@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}داشبورد{% endblock %}
+{% block title %}{% block dtitle %}{% endblock dtitle %}{% endblock %}
 {% block content %}
 <br>
 <div class="row align-items-start">
@@ -20,7 +20,7 @@
                 <a href="{% url 'account:companyprofilecreate' request.user.pk %}" class="list-group-item list-group-item-action">ساخت پروفایل شرکتی</a>
             {% elif request.user.cprofile and request.user.cprofile.confirm == True %}
                 <a href="{% url 'account:companyprofileupdate' request.user.cprofile.pk %}" class="list-group-item list-group-item-action">ويرايش پروفایل</a>
-                <a href="{% url 'item:create' %}" class="list-group-item list-group-item-action">اضافه کردن محصول</a>
+                <a href="{% url 'item:create' %}" class="list-group-item list-group-item-action">افزودن محصول</a>
                 <a href="{% url 'item:myitem' %}" class="list-group-item list-group-item-action">محصولات من</a>
             {% elif request.user.cprofile and request.user.cprofile.confirm == False %}
                 <a href="{% url 'account:companyprofileupdate' request.user.cprofile.pk %}" class="list-group-item list-group-item-action">ويرايش پروفایل</a>

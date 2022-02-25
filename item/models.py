@@ -67,7 +67,7 @@ class Item(models.Model):
     status = models.CharField(choices=ITEM_STATUS, default="d", max_length=10, verbose_name="وضعيت")
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['date']
         verbose_name_plural = "محصولات"
         verbose_name = "محصول"
     

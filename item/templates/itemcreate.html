@@ -1,5 +1,7 @@
 {% extends 'dashboard.html' %}
 
+{% block dtitle %}افزودن محصول{% endblock dtitle %}
+
 {% block dcontent %}
 <div class="col-3">
 <form method="post" enctype="multipart/form-data">
@@ -7,7 +9,7 @@
     {{ form.media }}
     {{ form.as_p }}
     <input type="file" multiple name="images" class="form-control"><br><br>
-    <input type="submit" value="create" class="btn btn-primary">
-</form>
+    <input type="submit" value="افزودن" class="btn btn-primary">
+</form><br>
 </div>
 {% endblock %}

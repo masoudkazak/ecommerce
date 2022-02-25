@@ -1,12 +1,14 @@
 {% extends 'dashboard.html' %}
 
+{% block dtitle %}تکمیل پروفایل{% endblock dtitle %}
+
 {% block dcontent %}
 <div class="col-3">
 <form method='POST' enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.media }}
     {{ form.as_p }}
-    <input type='submit' value="Create" class="btn btn-primary">
-</form>
+    <input type='submit' value="ثبت" class="btn btn-primary">
+</form><br>
 </div>
 {% endblock %}

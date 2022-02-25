@@ -1,15 +1,17 @@
 {% extends 'dashboard.html' %}
 
+{% block dtitle %}ویرایش آدرس{% endblock dtitle %}
+
 {% block dcontent %}
 <div class="col-6">
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" value="update" class="btn btn-primary">
+    <input type="submit" value="ویرایش" class="btn btn-primary">
 </form><br>
 <form method="post">
     {% csrf_token %}
-    <input type="submit" value="Delete" name="delete" class="btn btn-danger">
+    <input type="submit" value="حذف" name="delete" class="btn btn-danger">
 </form><br>
 </div>
 {% endblock %}

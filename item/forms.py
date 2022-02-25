@@ -15,7 +15,28 @@ class ItemUpdateForm(forms.ModelForm):
             'inventory': forms.NumberInput(attrs={"class":"form-control"}),
             'color': forms.SelectMultiple(attrs={"class":"form-control"})
         }
+    
+    def save(self, commit=True):
+        item = super(ItemUpdateForm, self).save(commit=False)
+        item.status = "d"
+        if commit:
+            item.save()
+        return item
         
+
+class ItemCreateForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        exclude = ['date', 'company', "discount", "images", "status"]
+        widgets = {
+            'name': forms.TextInput(attrs={"class":"form-control"}),
+            'category': forms.Select(attrs={"class":"form-control"}),
+            'price': forms.NumberInput(attrs={"class":"form-control"}),
+            'tags': forms.TextInput(attrs={"class":"form-control"}),
+            'inventory': forms.NumberInput(attrs={"class":"form-control"}),
+            'color': forms.SelectMultiple(attrs={"class":"form-control"})
+        }
+
 
 class CommentForm(forms.ModelForm):
     class Meta:

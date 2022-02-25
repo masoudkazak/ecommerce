@@ -42,8 +42,19 @@
                     </ul>
                   </div>
                 </div>
-              </nav>
-        {% block content %}{% endblock content %}
+              </nav><br>
+              {% if messages %}
+                  {% for message in messages %}
+                  <div {% if message.tags == "info" %} class="alert alert-info alert-dismissible fade show" 
+                        {% elif message.tags == "error" %} class="alert alert-danger alert-dismissible fade show"
+                        {% elif message.tags == "success" %} class="alert alert-success alert-dismissible fade show"
+                        {% endif %} role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                  {% endfor %}
+              {% endif %}
+        {% block content %}{% endblock content %}<br><br>
         </div>
     </body>
 </html>

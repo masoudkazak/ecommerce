@@ -2,21 +2,27 @@
 {% block title %}{{ item.name }}{% endblock %}
 
 {% block content %}
-{% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-        {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}{% endif %}
-        {{ message }}
+<br>
+{% if request.user.is_authenticated and request.user == item.company or request.user.is_superuser %}
+<ul class="nav nav-pills">
+    <li class="nav-item">
+        <form method="post">
+            {% csrf_token %}
+            <input type="submit" value="ناموجود" name="empty" class="btn btn-secondary">
+        </form>
     </li>
-    {% endfor %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'item:update' item.pk %}">ویرایش</a>
+    </li>
+    {% if request.user.is_superuser %}
+    <li class="nav-item">
+        <form method="post">
+            {% csrf_token %}
+            <input type="submit" value="حذف محصول" name="deleteitem" class="btn btn-danger">
+        </form>
+    </li>
+    {% endif %}
 </ul>
-{% endif %}
-{% if request.user.is_authenticated and  request.user == item.company %}
-    <form method="post">
-        {% csrf_token %}
-        <input type="submit" value="Delete" name="deleteitem" class="btn btn-danger">
-    </form>
 {% endif %}<br>
 <div class="row row-cols-1 row-cols-md-3 g-4">
     <div class="col">
@@ -69,7 +75,7 @@
                 {% if item.discount %}
                     <h1 style="color:red;">{{ item.int_discount }}%</h1>      
                 {% endif %}
-                <h2>{{ item.final_price }}</h2>
+                <h2>{{ item.final_price }} تومان</h2>
             <p>موحودی: {{ item.inventory }}<p><br>
             {% endif %}
             {% for color in item.color.all %}
@@ -97,7 +103,7 @@
     {{ comment.date|date:"Y-m-d / H:i" }}<br>
     {{ comment.text|safe }}<br><hr>
 {% empty %}
-    <p>No comment</p>
+    <p>هيچ ديدگاهي وجود ندارد</p>
 {% endfor %}
 
 {% if request.user.is_authenticated %}
@@ -105,11 +111,10 @@
         {% csrf_token %}
         {{ comment_form.media }}
         {{ comment_form.as_p }}
-        <input type="submit" value="comment" name="comment" class="btn btn-primary">
+        <input type="submit" value="كامنت" name="comment" class="btn btn-primary">
     </form>
 {% else %}
-    <a href="{% url 'account:login' %}">Login</a>
-    <a href="{% url 'account:create' %}">SignUp</a>
+    برای افزودن دیدگاه ابتدا <a href="{% url 'account:login' %}">وارد</a> شوید.
 {% endif %}
 <hr>
 
@@ -117,12 +122,12 @@
 <form method="post">
     {% csrf_token %}
     {{ orderitem_form.as_p }}
-    <input type="submit" value="Add" name="orderitem" class="btn btn-primary">
-</form>
+    <input type="submit" value="افزودن به سبد" name="orderitem" class="btn btn-success">
+</form><br>
 {% else %}
 <form method="post">
     {% csrf_token %}
-    <a href="{% url 'account:login' %}"><button type="button" class="btn btn-primary">Add</button></a>
-</form>
+    <a href="{% url 'account:login' %}"><button type="button" class="btn btn-success">افزودن به سبد</button></a>
+</form><br>
 {% endif %}
 {% endblock %}

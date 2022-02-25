@@ -1,4 +1,3 @@
-from this import d
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404
 from django.urls.base import reverse_lazy
@@ -53,6 +52,7 @@ class ItemDetailView(View):
                                     item=item,
                                     user=user)
                 new_comment.save()
+                messages.success(request, "کامت شما ثبت شد")
                 return redirect('item:detail', pk=item.pk)
             else:
                 ctxt['response_form'] = CommentForm
@@ -62,13 +62,15 @@ class ItemDetailView(View):
             item = self.get_object()
             if orderitem_form.is_valid():
                 count = orderitem_form.cleaned_data['count']
-
                 if count == 0:
-                    messages.error(request, "صفر تعداد انتخاب کرده اید")
+                    messages.error(request, "هیچ تعداد محصولی انتخاب نکرده اید")
                     return redirect('item:detail', pk=item.pk)
-                elif count > self.get_object().inventory:
-                    messages.error(request, "بیش از حد ظرفیت موجود")
+                elif count > item.inventory:
+                    messages.info(request, "بیش از حد ظرفیت موجود")
                     return redirect('item:detail', pk=item.pk)
+                elif request.user == item.company:
+                    messages.error(request, "این محصول شماست نمیتوانید به سبد خود ارسال کنید")
+                    return redirect("item:detail", pk=item.pk)
 
                 try:      
                     update_orderitem = OrderItem.objects.get(item=item)
@@ -91,16 +93,23 @@ class ItemDetailView(View):
                     new_order.items.add(OrderItem.objects.get(item=item))
                 else:
                     update_order.items.add(OrderItem.objects.get(item=item))
-
-                return redirect('item:list')
+                messages.success(request, "به سبد اضافه شد")
+                return HttpResponseRedirect(reverse('item:detail', args=[item.id,]))
             else:
                 ctxt['response_form'] = CommentForm
 
         elif "deleteitem" in request.POST:
             item = self.get_object()
             item.delete()
+            messages.success(request, "محصول شما حذف شد")
             return HttpResponseRedirect(reverse("item:list"))
-
+        
+        elif "empty" in request.POST:
+            item = self.get_object()
+            item.inventory = 0
+            item.save()
+            messages.success(request, "محصول ناموجود شد")
+            return HttpResponseRedirect(reverse("item:detail", args=[item.pk,]))
         return render(request, self.template_name, self.get_context_data(**ctxt))
 
 
@@ -111,12 +120,12 @@ class ItemUpdateView(UpdateView):
     context_object_name = "item"
 
     def get_success_url(self):
-        item = self.get_object()
-        return reverse_lazy("item:detail", args=(item.id,))
+        messages.success(self.request, "محصول با موفقیت ویرایش شد")
+        return reverse("account:dashboard")
         
 
 class ItemCreateView(View):
-    form_class = ItemUpdateForm
+    form_class = ItemCreateForm
     template_name = 'itemcreate.html'
 
     def get(self, request, *args, **kwargs):
@@ -169,14 +178,10 @@ class ItemCreateView(View):
 
             for image in images_list:
                 item.images.add(image)
-            return HttpResponseRedirect(reverse('account:dashboard'))
+            messages.success(request, "محصول شما ثبت شد. پس از تایید محصول منتشر خواهد شد")
+            return HttpResponseRedirect(reverse('item:myitem'))
 
         return render(request, self.template_name, {'form': form})
-
-    
-    # def get_success_url(self):
-    #     order = self.get_object()
-    #     return reverse_lazy("item:basket", args=(order.id,))
 
 
 class AddressView(LoginRequiredMixin ,View):
@@ -221,9 +226,10 @@ class AddressView(LoginRequiredMixin ,View):
                     else:
                         address.this_address = False
                         address.save()
+                messages.success(request, "آدرس شما انتخاب شد")
                 return HttpResponseRedirect(reverse('item:address'))
             else:
-                messages.info(request, "آدرسی انتخاب نکردید")
+                messages.error(request, "آدرسی انتخاب نکردید")
                 return redirect("item:address")
         return render(request, self.template_name, self.get_context_data(**ctxt))
 
@@ -235,12 +241,14 @@ class AddressUpdateView(LoginRequiredMixin,UpdateView):
     model = Address
 
     def get_success_url(self):
+        messages.add_message(self.request, messages.SUCCESS, "آدرس شما با موفقیت ویرایش شد")
         return reverse("item:address")
     
     def post(self, request, *args, **kwargs):
         if "delete" in request.POST:
             address = self.get_object()
             address.delete()
+            messages.success(request, "آدرش شما حذف شد")
             return HttpResponseRedirect(reverse("item:address"))
         return super().post(request, *args, **kwargs)
     
@@ -276,6 +284,7 @@ class AddressCreateView(LoginRequiredMixin, View):
                 this_address = False,
             )
             new_address.save()
+            messages.success(self.request, "آدرس جدید اضافه شد")
             return HttpResponseRedirect(reverse("item:address"))
             
         return render(requset, self.template_name, {"form":form})
@@ -322,6 +331,7 @@ class BasketView(LoginRequiredMixin ,View):
             delete = "delete-" + str(item.id)
             if delete in request.POST:
                 item.delete()
+                messages.success(request, "محصول مورد نظر حذف گردید")
                 return HttpResponseRedirect(reverse("item:basket")) 
             x = int(request.POST[str(item.id)])
             if x > item.item.inventory:
@@ -329,7 +339,7 @@ class BasketView(LoginRequiredMixin ,View):
                 return redirect("item:basket")
             item.count = x
             item.save()
-
+        messages.success(request, "تغییرات انجام شد")
         return HttpResponseRedirect(reverse("item:basket"))
 
 
@@ -338,6 +348,11 @@ class MyItemListView(LoginRequiredMixin, ListView):
     context_object_name = "items"
     
     def get_queryset(self):
-        items = Item.objects.filter(company=self.request.user).order_by("-status")
+        items = Item.objects.filter(company=self.request.user).order_by("status")
         return items
     
+    def get(self, request, *args, **kwargs):
+        if len(self.get_queryset()) == 0:
+            messages.info(request, "محصولی وجود ندارد")
+            return redirect("account:dashboard")
+        return super().get(request, *args, **kwargs)
