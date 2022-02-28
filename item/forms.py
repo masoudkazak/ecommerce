@@ -94,3 +94,7 @@ class AddressSelectForm(forms.ModelForm):
     class Meta:
         model = Address
         fields = ['this_address',]
+
+
+class ItemSearchForm(forms.Form):
+    lookup = forms.CharField(max_length=250, label="")

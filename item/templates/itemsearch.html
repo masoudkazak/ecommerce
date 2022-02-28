@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Search{% endblock title %}
+
+{% block content %}
+<div class="row row-cols-1 row-cols-md-4 g-4">
+    {% for item in qs %}
+    <div class="col">
+      <div class="card h-100">
+        <a href="{% url 'item:detail' item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top"></a>
+          <h4>{{ item.name }}</h4>
+          <h6>{{ item.category }}</h6>
+          <p>{{ item.body|safe }}</p>
+        <div class="card-footer">
+          {% if item.inventory == 0 %}
+          <h5 class="text-muted">نا موجود</h5>
+          {% else %}
+            {% if item.discount %}
+                <h5 style="color:red;">{{ item.int_discount }}%</h5>      
+            {% endif %}
+          <h5>{{ item.final_price }} تومان</h5>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+      <h1>محصولی یافت نشد.</h1>
+    {% endfor %}
+  </div>
+{% endblock %}

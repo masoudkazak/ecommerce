@@ -2,8 +2,17 @@
 
 {% block title %}Home{% endblock title %}
 
+{% block search %}
+<form method="post" class="d-flex">
+  {% csrf_token %}
+  {{ search_form }}
+  <input class="btn btn-outline-success" type="submit" value="جستجو" name="search">
+</form>
+{% endblock %}
+
 {% block content %}
-<br><div class="row row-cols-1 row-cols-md-4 g-4">
+<br>
+<div class="row row-cols-1 row-cols-md-4 g-4">
     {% for item in items %}
     <div class="col">
       <div class="card h-100">

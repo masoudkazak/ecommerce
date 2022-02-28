@@ -4,6 +4,7 @@ from taggit.managers import TaggableManager
 from django.core.validators import RegexValidator
 from ckeditor.fields import RichTextField
 from django_jalali.db import models as jmodels
+from .managers import ItemManager
 
 
 PHONE_NUMBER_REGEX = RegexValidator(
@@ -65,6 +66,8 @@ class Item(models.Model):
     color = models.ManyToManyField(ColorItem, verbose_name="رنگ ها")
     discount = models.FloatField(blank=True, null=True, verbose_name="درصد تخفیف")
     status = models.CharField(choices=ITEM_STATUS, default="d", max_length=10, verbose_name="وضعيت")
+
+    objects = ItemManager()
 
     class Meta:
         ordering = ['date']

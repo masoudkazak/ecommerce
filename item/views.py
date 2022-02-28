@@ -1,6 +1,6 @@
+from multiprocessing import get_context
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404
-from django.urls.base import reverse_lazy
 from .models import *
 from django.views.generic import *
 from .forms import *
@@ -14,9 +14,24 @@ from account.models import CompanyProfile
 
 class ItemListView(ListView):
     queryset = Item.objects.filter(status="p")
-    context_object_name = 'items'
     template_name = 'home.html'
     paginate_by = 8
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["items"] = self.get_queryset
+        context['search_form'] = ItemSearchForm()
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        if "search" in request.POST:
+            search_form = ItemSearchForm(request.POST)
+            if search_form.is_valid():
+                qs = Item.objects.search(query=search_form.cleaned_data['lookup'])
+                ctxt = {"qs":qs,}
+                return render(request, "itemsearch.html", context=ctxt)
+            else:
+                return redirect("item:list")
 
 
 class ItemDetailView(View):
