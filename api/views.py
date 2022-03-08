@@ -4,13 +4,17 @@ from blog.models import Post
 
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework import filters
 
 from .serializers import *
 
 
+# list Item api views
 class ItemListAPIView(generics.ListAPIView):
-    queryset = Item.objects.all()
+    queryset = Item.objects.filter(status="p")
     serializer_class = ItemListSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["name"]
 
 
 class ItemRetrieveAPIView(generics.RetrieveDestroyAPIView):
@@ -41,6 +45,7 @@ class CommentCreateAPIView(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# list Account api views
 class UserCreationAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreationSerializer
@@ -83,6 +88,7 @@ class UserChangePasswordAPIView(generics.UpdateAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# list Blog api views
 class PostListAPIView(generics.ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostListSerializer

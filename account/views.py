@@ -44,9 +44,13 @@ class UserLoginView(LoginView):
     
 
 class UserUpdateView(UpdateView):
-    model = User
+    # model = User
     template_name = 'update.html'
     form_class = UserUpdateForm
+
+    def get_object(self):
+        user = get_object_or_404(User, username=self.kwargs['username'])
+        return user
 
     def get_success_url(self):
         if self.request.user != self.get_object():
@@ -62,7 +66,7 @@ class ProfielCreateView(View):
     # form_class = ProfileCreateForm
     
     def get_object(self):
-        user = get_object_or_404(User, pk=self.kwargs['pk'])
+        user = get_object_or_404(User, username=self.kwargs['username'])
         return user
     
     def get_context_data(self, **kwargs):
@@ -112,26 +116,36 @@ class ProfileUpdateView(UpdateView):
     template_name = 'Profile-update.html'
     form_class = ProfileUpdateForm
 
+    def get_object(self, *args, **kwargs):
+        return get_object_or_404(
+            Profile,
+            user__username=self.kwargs['username']
+        )
+
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "پروفایل با موفقیت ویرایش شد")
         return reverse('account:dashboard')
 
 
-class UserPasswordChangeView(PasswordChangeView):
+class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     template_name = 'password_change.html'
     form_class = UserPasswordChangeForm
+    login_url = "account:login"
     
     def get_success_url(self):
         logout(self.request)
         messages.add_message(self.request, messages.SUCCESS, "گذرواژه با موفقیت تغییر کرد")
         return reverse('account:login')
+    
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class CompanyProfielCreateView(View):
     template_name = 'cprofile-create.html'
 
     def get_object(self):
-        user = get_object_or_404(User, pk=self.kwargs['pk'])
+        user = get_object_or_404(User, username=self.kwargs['username'])
         return user
     
     def get_context_data(self, **kwargs):
@@ -183,6 +197,13 @@ class CompanyProfileUpdateView(UpdateView):
     model = CompanyProfile
     template_name  = "cprofile-update.html"
     form_class = CompanyProfileUpdateForm
+
+    def get_object(self, *args, **kwargs):
+        return get_object_or_404(
+            CompanyProfile,
+            user__username=self.kwargs['username']
+        )
+    
 
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "پروفایل با موفقیت ویرایش شد")

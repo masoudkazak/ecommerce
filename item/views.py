@@ -1,4 +1,3 @@
-from multiprocessing import get_context
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404
 from .models import *
@@ -38,7 +37,10 @@ class ItemDetailView(View):
     template_name = 'itemdetail.html'
 
     def get_object(self):
-        item = get_object_or_404(Item, pk=self.kwargs['pk'])
+        item = get_object_or_404(Item,
+         name=self.kwargs['name'],
+         pk=self.kwargs['pk'],
+         )
         return item
 
     def get_context_data(self, **kwargs):
@@ -129,15 +131,21 @@ class ItemDetailView(View):
 
 
 class ItemUpdateView(UpdateView):
-    model = Item
     form_class = ItemUpdateForm
     template_name = 'itemupdate.html'
     context_object_name = "item"
 
+    def get_object(self):
+        item = get_object_or_404(Item,
+         name=self.kwargs['name'],
+         pk=self.kwargs['pk'],
+         )
+        return item
+
     def get_success_url(self):
         messages.success(self.request, "محصول با موفقیت ویرایش شد")
         return reverse("account:dashboard")
-        
+
 
 class ItemCreateView(View):
     form_class = ItemCreateForm

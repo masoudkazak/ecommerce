@@ -1,4 +1,3 @@
-from tkinter import Widget
 from django import forms
 from .models import *
 
@@ -6,7 +5,7 @@ from .models import *
 class ItemUpdateForm(forms.ModelForm):
     class Meta:
         model = Item
-        exclude = ['date', 'company', "discount", "images", "status"]
+        exclude = ['date', "images", "discount", "company", "status"]
         widgets = {
             'name': forms.TextInput(attrs={"class":"form-control"}),
             'category': forms.Select(attrs={"class":"form-control"}),
