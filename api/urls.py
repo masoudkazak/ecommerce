@@ -17,4 +17,8 @@ urlpatterns = [
     path("blog/<int:pk>/", PostRetrieveDestroyAPIView.as_view(), name="blogdetaildelete"),
     path("blog/<int:pk>/update/", PostUpdateAPIView.as_view(), name="blogupdate"),
     path("address/create/", AddressCreateView.as_view(), name="addresscreate"),
+    path("addresses/", AddressListAPIView.as_view(), name="addresslist"),
+    path("addresses/<int:pk>/update/", AddressUpdateAPIView.as_view(), name="addressupdate"),
+    path("basket/", BasketView.as_view(), name="basket"),
+    path("myitems/", MyItemListView.as_view(), name="myitems"),
 ]

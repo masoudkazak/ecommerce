@@ -75,6 +75,20 @@ class AddressCreateSerializer(serializers.ModelSerializer):
         model = Address
         exclude = ['user', 'this_address']
 
+# this serializer use for OrderSerializer
+class OrderItemFORorderSerializer(serializers.ModelSerializer):
+    item = ItemListSerializer()
+    class Meta:
+        model = OrderItem
+        fields = ['item', 'count']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemFORorderSerializer(many=True)
+    class Meta:
+        model = Order
+        fields = ['items',]
+
 
 #--------------------------------------------------------------------
 #-------------------------Account------------------------------------

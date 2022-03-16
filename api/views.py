@@ -195,19 +195,78 @@ class AddressCreateView(generics.CreateAPIView):
 
 
 class AddressListAPIView(generics.ListAPIView):
-    pass
+    serializer_class = AddressCreateSerializer
+
+    def get_queryset(self):
+        addresses =Address.objects.filter(user=self.request.user)
+        count = 0
+        # if there is bug, all addresses change to False
+        for address in addresses:
+            if address.this_address == True:
+                count += 1
+        if count > 1:
+            for address in addresses:
+                if address.this_address == True:
+                    address.this_address = False
+                    address.save()
+        return addresses
+    
+    def get(self, request, *args, **kwargs):
+        if len(self.get_queryset()) == 0:
+            return Response({"message":"آدرسي وجود ندارد"}, status=status.HTTP_204_NO_CONTENT)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AddressUpdateAPIView(generics.UpdateAPIView):
-    pass
+    serializer_class = AddressCreateSerializer
+    queryset = Address.objects.all()
 
 
 class BasketView(APIView):
-    pass
+
+    def get_object(self):
+        order =Order.objects.get(user=self.request.user)
+        return order
+    
+    # def get_context_data(self, **kwargs):
+    #     kwargs['order'] = self.get_object()
+    #     kwargs['active_address'] = Address.objects.get(user=self.request.user, this_address=True)
+    #     return kwargs
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            self.get_object()
+        except Order.DoesNotExist:
+            return Response({"message":"سبد خالي است"}, status=status.HTTP_204_NO_CONTENT)
+
+        if not self.get_object().items.all().exists():
+            return Response({"message":"سبد خالي است"}, status=status.HTTP_204_NO_CONTENT)
+
+        # try:
+        #     self.get_context_data()['active_address']
+        # except Address.DoesNotExist:
+        #     if len(Address.objects.filter(user=request.user)) == 0:
+        #         messages.info(request, "آدرسی نساخته اید")
+        #         return redirect("item:addresscreate")
+        #     messages.info(request, "آدرسی انتخاب نکرده اید")
+        #     return redirect("item:address")
+        serializer = OrderSerializer(self.get_object())
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class MyItemListView(generics.ListAPIView):
-    pass
+    serializer_class = ItemListSerializer
+
+    def get_queryset(self):
+        MyItems = Item.objects.filter(company=self.request.user).order_by("status")
+        return MyItems
+    
+    def get(self, request, *args, **kwargs):
+        if len(self.get_queryset()) == 0:
+            return Response({"message":"محصولي وجود ندارد"}, status=status.HTTP_204_NO_CONTENT)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 #--------------------------------------------------------------------
