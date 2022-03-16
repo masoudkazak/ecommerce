@@ -21,7 +21,7 @@ class DashboardView(LoginRequiredMixin, View):
     template_name = "dashboard.html"
 
     def get(self, request, *args, **kwargs):
-        return redirect('account:update', pk=request.user.pk)
+        return redirect('account:update', username=request.user.username, )
 
 
 class UserCreationView(CreateView):

@@ -12,13 +12,16 @@ from account.models import CompanyProfile
 
 
 class ItemListView(ListView):
-    queryset = Item.objects.filter(status="p")
     template_name = 'home.html'
     paginate_by = 8
     
+    def get_queryset(self):
+        queryset = Item.objects.filter(status="p")
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["items"] = self.get_queryset
+        context["items"] = self.get_queryset()
         context['search_form'] = ItemSearchForm()
         return context
     
@@ -26,7 +29,7 @@ class ItemListView(ListView):
         if "search" in request.POST:
             search_form = ItemSearchForm(request.POST)
             if search_form.is_valid():
-                qs = Item.objects.search(query=search_form.cleaned_data['lookup'])
+                qs = Item.objects.search(query=search_form.cleaned_data['lookup']).filter(status="p")
                 ctxt = {"qs":qs,}
                 return render(request, "itemsearch.html", context=ctxt)
             else:
@@ -70,7 +73,7 @@ class ItemDetailView(View):
                                     user=user)
                 new_comment.save()
                 messages.success(request, "کامت شما ثبت شد")
-                return redirect('item:detail', pk=item.pk)
+                return redirect('item:detail', pk=item.pk, name=item.name)
             else:
                 ctxt['response_form'] = CommentForm
 
@@ -81,13 +84,13 @@ class ItemDetailView(View):
                 count = orderitem_form.cleaned_data['count']
                 if count == 0:
                     messages.error(request, "هیچ تعداد محصولی انتخاب نکرده اید")
-                    return redirect('item:detail', pk=item.pk)
+                    return redirect('item:detail', pk=item.pk, name=item.name)
                 elif count > item.inventory:
                     messages.info(request, "بیش از حد ظرفیت موجود")
-                    return redirect('item:detail', pk=item.pk)
+                    return redirect('item:detail', pk=item.pk, name=item.name)
                 elif request.user == item.company:
                     messages.error(request, "این محصول شماست نمیتوانید به سبد خود ارسال کنید")
-                    return redirect("item:detail", pk=item.pk)
+                    return redirect("item:detail", pk=item.pk, name=item.name)
 
                 try:      
                     update_orderitem = OrderItem.objects.get(item=item)
@@ -97,7 +100,7 @@ class ItemDetailView(View):
                                         customer=request.user)
                     new_orderitem.save()
                 else:
-                    update_orderitem.count = update_orderitem.count + count
+                    update_orderitem.count += count
                     update_orderitem.save()
 
                 try:
@@ -111,7 +114,7 @@ class ItemDetailView(View):
                 else:
                     update_order.items.add(OrderItem.objects.get(item=item))
                 messages.success(request, "به سبد اضافه شد")
-                return HttpResponseRedirect(reverse('item:detail', args=[item.id,]))
+                return HttpResponseRedirect(reverse('item:detail', args=[item.name, item.id,]))
             else:
                 ctxt['response_form'] = CommentForm
 
@@ -126,7 +129,7 @@ class ItemDetailView(View):
             item.inventory = 0
             item.save()
             messages.success(request, "محصول ناموجود شد")
-            return HttpResponseRedirect(reverse("item:detail", args=[item.pk,]))
+            return HttpResponseRedirect(reverse("item:detail", args=[item.name, item.id,]))
         return render(request, self.template_name, self.get_context_data(**ctxt))
 
 

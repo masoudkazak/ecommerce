@@ -11,7 +11,7 @@
           <table class="table table-striped">
             <tbody>
               <tr>
-                <th scope="row"><a href="{% url 'item:detail' orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" height="50px"></a></th>
+                <th scope="row"><a href="{% url 'item:detail' orderitem.item.name orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" height="50px"></a></th>
                 <td>{{ orderitem.item.name }}</td>
                 <td>{{ orderitem.item.final_price }} تومان</td>
                 <td>

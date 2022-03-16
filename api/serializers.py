@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from item.models import Item, Comment
+from item.models import *
 from taggit.serializers import (TagListSerializerField,
                                 TaggitSerializer)
 from account.models import Profile
@@ -8,19 +8,34 @@ from blog.models import Post
 from blog.models import PostComment
 
 
+#--------------------------------------------------------------------
+#-------------------------Item---------------------------------------
+#--------------------------------------------------------------------
+
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         exclude = ['item',]
 
 
+class ImagesSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField("get_image_url")
+    class Meta:
+        model = Uploadimage
+        fields = ['image']
+    
+    def get_image_url(self, obj):
+        return obj.image.url
+
+
 class ItemDetailSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField()
     comments = CommentSerializer(many=True, read_only=True)
+    images = ImagesSerializer(many=True)
     
     class Meta:
         model = Item
-        fields = ['name', 'company', 'price', 'body', 'images','tags', 'comments', 'category',]
+        fields = ['name', 'company', 'price', 'body', 'images','tags', 'comments', 'category', "inventory"]
 
 
 class ItemSerializerUpdate(TaggitSerializer, serializers.ModelSerializer):
@@ -28,11 +43,12 @@ class ItemSerializerUpdate(TaggitSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['name', 'company', 'price', 'body', 'images','tags', 'category', 'company',]
+        fields = ['name', 'price', 'body', 'images','tags', 'category', "inventory", "color"]
 
 
 class ItemListSerializer(serializers.ModelSerializer):
     tags = TagListSerializerField()
+    images = ImagesSerializer(many=True)
     
     class Meta:
         model = Item
@@ -46,6 +62,23 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'read_only':True}
         }
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['count',]
+
+
+class AddressCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        exclude = ['user', 'this_address']
+
+
+#--------------------------------------------------------------------
+#-------------------------Account------------------------------------
+#--------------------------------------------------------------------
 
 
 class ProfileCreationSerializer(serializers.ModelSerializer):
@@ -85,7 +118,6 @@ class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile')
-        user = super().update(instance, validated_data)
         instance.first_name = validated_data['first_name']
         instance.last_name = validated_data['last_name']
         instance.username = validated_data['username']
@@ -110,6 +142,10 @@ class UserPasswordChangeSerializer(serializers.Serializer):
         style={'input_type': 'password'}
     )
 
+
+#--------------------------------------------------------------------
+#-------------------------Blog------------------------------------
+#--------------------------------------------------------------------
 
 class PostListSerializer(serializers.ModelSerializer):
     class Meta:

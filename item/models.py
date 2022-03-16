@@ -70,7 +70,7 @@ class Item(models.Model):
     objects = ItemManager()
 
     class Meta:
-        ordering = ['date']
+        ordering = ['-date']
         verbose_name_plural = "محصولات"
         verbose_name = "محصول"
     
