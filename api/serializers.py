@@ -75,8 +75,14 @@ class AddressCreateSerializer(serializers.ModelSerializer):
         model = Address
         exclude = ['user', 'this_address']
 
-# this serializer use for OrderSerializer
-class OrderItemFORorderSerializer(serializers.ModelSerializer):
+
+class AddressUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        exclude = ['user',]
+
+
+class OrderItemDeleteSerializer(serializers.ModelSerializer):
     item = ItemListSerializer()
     class Meta:
         model = OrderItem
@@ -84,7 +90,7 @@ class OrderItemFORorderSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemFORorderSerializer(many=True)
+    items = OrderItemDeleteSerializer(many=True)
     class Meta:
         model = Order
         fields = ['items',]

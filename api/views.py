@@ -195,7 +195,7 @@ class AddressCreateView(generics.CreateAPIView):
 
 
 class AddressListAPIView(generics.ListAPIView):
-    serializer_class = AddressCreateSerializer
+    serializer_class = AddressUpdateSerializer
 
     def get_queryset(self):
         addresses =Address.objects.filter(user=self.request.user)
@@ -219,8 +219,22 @@ class AddressListAPIView(generics.ListAPIView):
 
 
 class AddressUpdateAPIView(generics.UpdateAPIView):
-    serializer_class = AddressCreateSerializer
+    serializer_class = AddressUpdateSerializer
     queryset = Address.objects.all()
+    
+    def perform_update(self, serializer):
+        if serializer.validated_data['this_address'] == True:
+            my_addresses = Address.objects.filter(user=self.request.user)
+            for address in my_addresses:
+                if address.this_address == True:
+                    address.this_address = False
+                    address.save()
+        serializer.save()
+    
+    def delete(self, request, *args, **kwargs):
+        address = self.get_object()
+        address.delete()
+        return Response({"message":"آدرس شما حذف شد"}, status=status.HTTP_200_OK)
 
 
 class BasketView(APIView):
@@ -229,28 +243,24 @@ class BasketView(APIView):
         order =Order.objects.get(user=self.request.user)
         return order
     
-    # def get_context_data(self, **kwargs):
-    #     kwargs['order'] = self.get_object()
-    #     kwargs['active_address'] = Address.objects.get(user=self.request.user, this_address=True)
-    #     return kwargs
-    
     def get(self, request, *args, **kwargs):
         try:
             self.get_object()
+        # if user does have not a basket ever
         except Order.DoesNotExist:
             return Response({"message":"سبد خالي است"}, status=status.HTTP_204_NO_CONTENT)
-
+        # if user before had a basket but now is empty
         if not self.get_object().items.all().exists():
             return Response({"message":"سبد خالي است"}, status=status.HTTP_204_NO_CONTENT)
 
-        # try:
-        #     self.get_context_data()['active_address']
-        # except Address.DoesNotExist:
-        #     if len(Address.objects.filter(user=request.user)) == 0:
-        #         messages.info(request, "آدرسی نساخته اید")
-        #         return redirect("item:addresscreate")
-        #     messages.info(request, "آدرسی انتخاب نکرده اید")
-        #     return redirect("item:address")
+        # if User did not choose an address or did not create an address
+        try:
+            Address.objects.get(user=self.request.user, this_address=True)
+        except Address.DoesNotExist:
+            if len(Address.objects.filter(user=request.user)) == 0:
+                return Response({"message":"آدرسی نساخته اید"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"message":"آدرسی انتخاب نکرده اید"}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = OrderSerializer(self.get_object())
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -268,6 +278,23 @@ class MyItemListView(generics.ListAPIView):
         serializer = self.get_serializer(self.get_queryset(), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class OrderitemDeleteAPIView(generics.DestroyAPIView):
+    serializer_class = OrderItemDeleteSerializer
+
+    def get_object(self):
+        orderitem = get_object_or_404(
+            OrderItem,
+            customer=self.kwargs['customer'],
+            pk=self.kwargs['pk']
+        )
+        return orderitem
+    
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_object())
+        return Response(serializer.data)
+
+# next features ==> Permissions
 
 #--------------------------------------------------------------------
 #-------------------------Account------------------------------------
