@@ -1,3 +1,4 @@
+from operator import ge
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
@@ -8,8 +9,10 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework import filters
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from .serializers import *
+from .permissions import *
 
 
 #--------------------------------------------------------------------
@@ -20,9 +23,12 @@ class ItemListAPIView(generics.ListAPIView):
     serializer_class = ItemListSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ["name"]
+    permission_classes = [AllowAny,]
 
 
 class ItemRetrieveAPIView(APIView):
+
+    permission_classes = [IsOwnerOrSuperuserOrReadonly]
 
     def get_object(self):
         item = get_object_or_404(
@@ -101,10 +107,10 @@ class ItemRetrieveAPIView(APIView):
 
 class ItemCreateAPIView(generics.CreateAPIView):
     serializer_class = ItemSerializerUpdate
+    permission_classes = [IsCompanyprofileOrSuperuser]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        print(request.data)
         images = request.FILES.getlist("images")
         if serializer.is_valid():
             name = serializer._validated_data['name']
@@ -212,7 +218,7 @@ class AddressListAPIView(generics.ListAPIView):
         return addresses
     
     def get(self, request, *args, **kwargs):
-        if len(self.get_queryset()) == 0:
+        if not self.get_queryset().exists():
             return Response({"message":"آدرسي وجود ندارد"}, status=status.HTTP_204_NO_CONTENT)
         serializer = self.get_serializer(self.get_queryset(), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -257,7 +263,7 @@ class BasketView(APIView):
         try:
             Address.objects.get(user=self.request.user, this_address=True)
         except Address.DoesNotExist:
-            if len(Address.objects.filter(user=request.user)) == 0:
+            if not Address.objects.filter(user=request.user).exists():
                 return Response({"message":"آدرسی نساخته اید"}, status=status.HTTP_403_FORBIDDEN)
             return Response({"message":"آدرسی انتخاب نکرده اید"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -273,7 +279,7 @@ class MyItemListView(generics.ListAPIView):
         return MyItems
     
     def get(self, request, *args, **kwargs):
-        if len(self.get_queryset()) == 0:
+        if not self.get_queryset().exists():
             return Response({"message":"محصولي وجود ندارد"}, status=status.HTTP_204_NO_CONTENT)
         serializer = self.get_serializer(self.get_queryset(), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -293,8 +299,7 @@ class OrderitemDeleteAPIView(generics.DestroyAPIView):
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(self.get_object())
         return Response(serializer.data)
-
-# next features ==> Permissions
+        
 
 #--------------------------------------------------------------------
 #-------------------------Account------------------------------------
@@ -339,6 +344,22 @@ class UserChangePasswordAPIView(generics.UpdateAPIView):
                 return Response(response)
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfielCreateAPIView(generics.CreateAPIView):
+    pass
+
+
+class ProfileUpdateAPIView(generics.UpdateAPIView):
+    pass
+
+
+class CompanyProifleCreateAPIView(generics.CreateAPIView):
+    pass
+
+
+class CompanyProfileUpdateAPIView(generics.UpdateAPIView):
+    pass
 
 
 #--------------------------------------------------------------------

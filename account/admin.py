@@ -17,7 +17,7 @@ class ProfileCompanyAdmin(admin.ModelAdmin):
     search_fields = ['user__username', "phone_number", "home_phone_number",]
     actions = ['make_confirm_company', "make_invalid"]
 
-    @admin.action(description="تایید کردن آدرس")
+    @admin.action(description="تایید کردن شرکت")
     def make_confirm_company(self, request, queryset):
         queryset.update(confirm=True)
     

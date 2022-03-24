@@ -233,7 +233,7 @@ class AddressView(LoginRequiredMixin ,View):
         return kwargs
     
     def get(self, request, *args, **kwargs):
-        if len(self.get_object()) == 0:
+        if not self.get_object().exists():
             messages.info(request, "شما آدرسی نساخته اید")
             return redirect('item:addresscreate')
         return render(request, self.template_name, self.get_context_data())
@@ -343,7 +343,7 @@ class BasketView(LoginRequiredMixin ,View):
         try:
             self.get_context_data()['active_address']
         except Address.DoesNotExist:
-            if len(Address.objects.filter(user=request.user)) == 0:
+            if not Address.objects.filter(user=request.user).exists():
                 messages.info(request, "آدرسی نساخته اید")
                 return redirect("item:addresscreate")
             messages.info(request, "آدرسی انتخاب نکرده اید")
@@ -378,7 +378,7 @@ class MyItemListView(LoginRequiredMixin, ListView):
         return items
     
     def get(self, request, *args, **kwargs):
-        if len(self.get_queryset()) == 0:
+        if not self.get_queryset().exists():
             messages.info(request, "محصولی وجود ندارد")
             return redirect("account:dashboard")
         return super().get(request, *args, **kwargs)

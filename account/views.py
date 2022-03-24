@@ -1,4 +1,3 @@
-from urllib import request
 from django.shortcuts import redirect, get_object_or_404, render
 from django.views import View
 from django.views.generic import (
@@ -44,7 +43,6 @@ class UserLoginView(LoginView):
     
 
 class UserUpdateView(UpdateView):
-    # model = User
     template_name = 'update.html'
     form_class = UserUpdateForm
 
@@ -60,11 +58,8 @@ class UserUpdateView(UpdateView):
     
 
 class ProfielCreateView(View):
-    # model = User
-    # context_object_name = 'user'
     template_name = 'profile-create.html'
-    # form_class = ProfileCreateForm
-    
+
     def get_object(self):
         user = get_object_or_404(User, username=self.kwargs['username'])
         return user
