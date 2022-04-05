@@ -1,5 +1,3 @@
-from operator import ge
-from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
 from item.models import Item, Comment
@@ -14,6 +12,9 @@ from rest_framework.permissions import AllowAny
 from .serializers import *
 from .permissions import *
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 #--------------------------------------------------------------------
 #-------------------------Item---------------------------------------
@@ -307,6 +308,7 @@ class OrderitemDeleteAPIView(generics.DestroyAPIView):
 class UserCreationAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreationSerializer
+    permission_classes = [AllowAny,]
 
 
 class UserRetrieveUpdateAPIView(generics.UpdateAPIView):
@@ -344,14 +346,6 @@ class UserChangePasswordAPIView(generics.UpdateAPIView):
                 return Response(response)
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ProfielCreateAPIView(generics.CreateAPIView):
-    pass
-
-
-class ProfileUpdateAPIView(generics.UpdateAPIView):
-    pass
 
 
 class CompanyProifleCreateAPIView(generics.CreateAPIView):

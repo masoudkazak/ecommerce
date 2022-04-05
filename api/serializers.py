@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 from item.models import *
 from taggit.serializers import (TagListSerializerField,
@@ -7,6 +6,9 @@ from account.models import Profile
 from blog.models import Post
 from blog.models import PostComment
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 #--------------------------------------------------------------------
 #-------------------------Item---------------------------------------
@@ -120,13 +122,22 @@ class UserCreationSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        print(validated_data)
         profile_data = validated_data.pop('profile')
         user = super().create(validated_data)
         user.set_password(validated_data['password'])
         user.save()
         Profile.objects.create(user=user, **profile_data)
         return user
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop("profile")
+        instance.email = validated_data.get('email', instance.email)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.username = validated_data.get('username', instance.username)
+        instance.save()
+        Profile.objects.update(user=instance.username, **profile_data)
+        return instance
 
 
 class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
@@ -144,7 +155,6 @@ class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
         instance.email = validated_data['email']
         instance.save()
         instance.profile.image = profile_data.get('image', instance.profile.image)
-        instance.profile.phone_number = profile_data.get('phone_number', instance.profile.image)
         instance.profile.bio = profile_data.get('bio', instance.profile.bio)
         instance.profile.gender = profile_data.get('gender', instance.profile.gender)
         instance.profile.save()

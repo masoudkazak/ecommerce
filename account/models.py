@@ -1,8 +1,9 @@
-from ckeditor.fields import RichTextField
 from django.db import models
-from django.contrib.auth.models import User
-from item.models import PHONE_NUMBER_REGEX
+from ckeditor.fields import RichTextField
 from django.core.validators import RegexValidator
+from django.contrib.auth.models import AbstractUser
+from .validators import UnicodeUsernameValidator
+from django.utils.translation import gettext_lazy as _
 
 
 GENDER = (
@@ -16,10 +17,23 @@ REGEX_HOME_PHONE_NUMBER = RegexValidator(
 )
 
 
+class User(AbstractUser):
+    username_validator = UnicodeUsernameValidator()
+
+    username = models.CharField(
+        _('شماره تلفن'),
+        max_length=13,
+        unique=True,
+        help_text=_('09123456789'),
+        validators=[username_validator],
+        error_messages={
+            'unique': _("A user with that mobile number already exists."),
+        },)
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name="کاربر")
     image = models.ImageField(upload_to='profile/%Y/%m/%d/', blank=True, null=True, verbose_name="عکس پروفایل")
-    phone_number = models.CharField(max_length=13, validators=[PHONE_NUMBER_REGEX], blank=True, null=True,unique=True, verbose_name="شماره موبایل")
     bio = RichTextField(blank=True, null=True, verbose_name="درمورد من")
     gender = models.CharField(max_length=25, choices=GENDER, blank=True, null=True, verbose_name="جنسیت")
 
@@ -35,7 +49,6 @@ class Profile(models.Model):
 class CompanyProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cprofile', verbose_name="شرکت")
     image = models.ImageField(upload_to='Cprofile/%Y/%m/%d/', blank=True, null=True, verbose_name="عکس پروفال")
-    phone_number = models.CharField(max_length=13, validators=[PHONE_NUMBER_REGEX], default=None, unique=True, verbose_name="شماره موبایل")
     home_phone_number = models.CharField(max_length=13, validators=[REGEX_HOME_PHONE_NUMBER], default=None, unique=True, verbose_name="شماره تلفن شرکت")
     bio = RichTextField(blank=True, null=True, verbose_name="درمورد شرکت")
     address_company = models.TextField(verbose_name="آدرس")

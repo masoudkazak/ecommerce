@@ -4,7 +4,6 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from django.contrib.auth.models import User
 
 from .models import *
 from .forms import *
@@ -14,6 +13,9 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class DashboardView(LoginRequiredMixin, View):
@@ -28,6 +30,10 @@ class UserCreationView(CreateView):
     template_name = 'create.html'
     form_class = UserCreateForm
 
+    def get(self, request, *args, **kwargs):
+        logout(request)
+        return super().get(request, *args, **kwargs)
+
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "ثبت نام شما با موفقیت انجام شد")
         return reverse('account:login')
@@ -36,6 +42,10 @@ class UserCreationView(CreateView):
 class UserLoginView(LoginView):
     template_name = 'login.html'
     form_class = UserLoginForm
+
+    def get(self, request, *args, **kwargs):
+        logout(request)
+        return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "شما وارد سایت شدید.")
@@ -49,10 +59,13 @@ class UserUpdateView(UpdateView):
     def get_object(self):
         user = get_object_or_404(User, username=self.kwargs['username'])
         return user
+    
+    def get(self, request, *args, **kwargs):
+        if request.user != self.get_object():
+            return redirect("item:list")
+        return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
-        if self.request.user != self.get_object():
-            return redirect("item:list")
         messages.add_message(self.request, messages.SUCCESS, "اکانت با موفقیت ویرایش شد.")
         return reverse('account:dashboard')
     
@@ -85,15 +98,11 @@ class ProfielCreateView(View):
         form = ProfileCreateForm(request.POST, request.FILES)
         if form.is_valid():
             image = form.cleaned_data['image']
-            phone_number = form.cleaned_data['phone_number']
-            # 09123456789 or +989123456789
-            phone_number = "09" + phone_number[-9:]
             bio = form.cleaned_data['bio']
             gender = form.cleaned_data['gender']
             user = self.get_object()
             new_profile = Profile(
                 image = image,
-                phone_number = phone_number,
                 bio = bio,
                 gender = gender,
                 user = user,
@@ -159,8 +168,6 @@ class CompanyProfielCreateView(View):
         form = CompanyProfileCreateForm(request.POST, request.FILES)
         if form.is_valid():
             image = form.cleaned_data['image']
-            phone_number = form.cleaned_data['phone_number']
-            phone_number = "09" + phone_number[-9:]
             home_phone_number = form.cleaned_data['home_phone_number']
             # 01732240742
             home_phone_number = "0" + home_phone_number[-10:]
@@ -169,7 +176,6 @@ class CompanyProfielCreateView(View):
             user = self.get_object()
             new_profile = CompanyProfile(user=user,
                                 image=image,
-                                phone_number=phone_number,
                                 bio=bio,
                                 address_company=address_company,
                                 home_phone_number=home_phone_number)

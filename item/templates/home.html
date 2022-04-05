@@ -34,6 +34,7 @@
     </div>
     {% endfor %}
   </div><br><br>
+  {% if items|length != 0 %}
 <nav aria-label="Page navigation example">
     <ul class="pagination">
       {% if page_obj.has_previous %}
@@ -49,4 +50,5 @@
       {% endif %}
     </ul>
   </nav>
+  {% endif %}
 {% endblock content %}
