@@ -2,7 +2,9 @@ from rest_framework import permissions
 from account.models import CompanyProfile
 
 
-class IsCompanyprofileOrSuperuser(permissions.BasePermission):
+class IsCompanyProfileOrSuperuser(permissions.BasePermission):
+    message = "حساب شما هنوز تایید نشده است یا هنوز حساب شرکتی نساخته اید"
+
     def has_permission(self, request, view):
         if request.user.is_authenticated:
             if request.user.is_superuser:
@@ -24,3 +26,16 @@ class IsOwnerOrSuperuserOrReadonly(permissions.BasePermission):
                 or
                 request.user.is_superuser
                 )
+
+# CP = CompanyProfile
+class IsUserHasCPOrNot(permissions.BasePermission):
+    message = "حساب شرکتی از قبل موجود است"
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            try:
+                CompanyProfile.objects.get(user=request.user)
+            except CompanyProfile.DoesNotExist:
+                return True
+            else:
+                return False

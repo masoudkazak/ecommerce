@@ -147,6 +147,7 @@ class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
 
 class CompanyProfielCreateView(View):
     template_name = 'cprofile-create.html'
+    form_class = CompanyProfileForm
 
     def get_object(self):
         user = get_object_or_404(User, username=self.kwargs['username'])
@@ -155,7 +156,7 @@ class CompanyProfielCreateView(View):
     def get_context_data(self, **kwargs):
         kwargs['user'] = self.get_object()
         if "form" not in kwargs:
-            kwargs['form'] = CompanyProfileCreateForm()
+            kwargs['form'] = self.form_class()
         return kwargs
     
     def get(self, request, *args, **kwargs):
@@ -165,31 +166,34 @@ class CompanyProfielCreateView(View):
     
     def post(self, request, *args, **kwargs):
         ctxt = {}
-        form = CompanyProfileCreateForm(request.POST, request.FILES)
+        form = self.form_class(request.POST, request.FILES)
         if form.is_valid():
             image = form.cleaned_data['image']
             home_phone_number = form.cleaned_data['home_phone_number']
             # 01732240742
             home_phone_number = "0" + home_phone_number[-10:]
-            bio = form.cleaned_data['bio']
-            address_company = form.cleaned_data['address_company']
-            user = self.get_object()
-            new_profile = CompanyProfile(user=user,
-                                image=image,
-                                bio=bio,
-                                address_company=address_company,
-                                home_phone_number=home_phone_number)
-            new_profile.save()
             try:
-                profile = Profile.objects.get(user=request.user)
-            except Profile.DoesNotExist:
+                cp = CompanyProfile.objects.get(home_phone_number=home_phone_number)
+            except CompanyProfile.DoesNotExist:
+                bio = form.cleaned_data['bio']
+                address_company = form.cleaned_data['address_company']
+                user = self.get_object()
+                new_profile = CompanyProfile(user=user,
+                                    image=image,
+                                    bio=bio,
+                                    address_company=address_company,
+                                    home_phone_number=home_phone_number)
+                new_profile.save()
+                try:
+                    profile = Profile.objects.get(user=request.user)
+                except Profile.DoesNotExist:
+                    messages.success(request, "ثبت نام با موفقیت انجام شد. پس از تایید پروفایل می توایند محصول اضافه کنید.")
+                    return HttpResponseRedirect(reverse("account:dashboard"))
+                profile.delete()
                 messages.success(request, "ثبت نام با موفقیت انجام شد. پس از تایید پروفایل می توایند محصول اضافه کنید.")
                 return HttpResponseRedirect(reverse("account:dashboard"))
-            profile.delete()
-            messages.success(request, "ثبت نام با موفقیت انجام شد. پس از تایید پروفایل می توایند محصول اضافه کنید.")
-            return HttpResponseRedirect(reverse("account:dashboard"))
         else:
-            ctxt['form'] = CompanyProfileCreateForm
+            ctxt['form'] = self.form_class
 
         return render(request, self.template_name, self.get_context_data(**ctxt))
 
@@ -197,7 +201,7 @@ class CompanyProfielCreateView(View):
 class CompanyProfileUpdateView(UpdateView):
     model = CompanyProfile
     template_name  = "cprofile-update.html"
-    form_class = CompanyProfileUpdateForm
+    form_class = CompanyProfileForm
 
     def get_object(self, *args, **kwargs):
         return get_object_or_404(
@@ -205,7 +209,6 @@ class CompanyProfileUpdateView(UpdateView):
             user__username=self.kwargs['username']
         )
     
-
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "پروفایل با موفقیت ویرایش شد")
         return reverse('account:dashboard')

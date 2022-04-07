@@ -2,22 +2,22 @@ from rest_framework import serializers
 from item.models import *
 from taggit.serializers import (TagListSerializerField,
                                 TaggitSerializer)
-from account.models import Profile
-from blog.models import Post
-from blog.models import PostComment
+from account.models import Profile, CompanyProfile
 
 from django.contrib.auth import get_user_model
 
+
 User = get_user_model()
 
-#--------------------------------------------------------------------
-#-------------------------Item---------------------------------------
-#--------------------------------------------------------------------
+# --------------------------------------------------------------------
+# -------------------------Item---------------------------------------
+# --------------------------------------------------------------------
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        exclude = ['item',]
+        exclude = ['item', ]
 
 
 class ImagesSerializer(serializers.ModelSerializer):
@@ -86,6 +86,7 @@ class AddressUpdateSerializer(serializers.ModelSerializer):
 
 class OrderItemDeleteSerializer(serializers.ModelSerializer):
     item = ItemListSerializer()
+
     class Meta:
         model = OrderItem
         fields = ['item', 'count']
@@ -93,20 +94,19 @@ class OrderItemDeleteSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemDeleteSerializer(many=True)
+
     class Meta:
         model = Order
         fields = ['items',]
 
 
-#--------------------------------------------------------------------
-#-------------------------Account------------------------------------
-#--------------------------------------------------------------------
-
-
+# --------------------------------------------------------------------
+# -------------------------Account------------------------------------
+# --------------------------------------------------------------------
 class ProfileCreationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        exclude = ['user',]
+        exclude = ['user', ]
 
 
 class UserCreationSerializer(serializers.ModelSerializer):
@@ -124,20 +124,11 @@ class UserCreationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         profile_data = validated_data.pop('profile')
         user = super().create(validated_data)
+        user.username = "09" + validated_data['username'][-9:]
         user.set_password(validated_data['password'])
         user.save()
         Profile.objects.create(user=user, **profile_data)
         return user
-
-    def update(self, instance, validated_data):
-        profile_data = validated_data.pop("profile")
-        instance.email = validated_data.get('email', instance.email)
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.username = validated_data.get('username', instance.username)
-        instance.save()
-        Profile.objects.update(user=instance.username, **profile_data)
-        return instance
 
 
 class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
@@ -148,17 +139,22 @@ class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name', 'username', 'email', 'profile']
 
     def update(self, instance, validated_data):
-        profile_data = validated_data.pop('profile')
-        instance.first_name = validated_data['first_name']
-        instance.last_name = validated_data['last_name']
-        instance.username = validated_data['username']
-        instance.email = validated_data['email']
+        profile_data = validated_data.pop("profile")
+        instance.email = validated_data.get('email', instance.email)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.username = validated_data.get('username', instance.username)
+        instance.username = "09" + instance.username[-9:] 
         instance.save()
-        instance.profile.image = profile_data.get('image', instance.profile.image)
-        instance.profile.bio = profile_data.get('bio', instance.profile.bio)
-        instance.profile.gender = profile_data.get('gender', instance.profile.gender)
-        instance.profile.save()
-        return instance
+        user = User.objects.get(pk=instance.pk)
+        try:
+            Profile.objects.get(user=user)
+        except Profile.DoesNotExist:
+            Profile.objects.create(user=user, **profile_data)
+            return instance
+        else:
+            Profile.objects.update(user=user, **profile_data)
+            return instance
 
 
 class UserPasswordChangeSerializer(serializers.Serializer):
@@ -173,36 +169,7 @@ class UserPasswordChangeSerializer(serializers.Serializer):
     )
 
 
-#--------------------------------------------------------------------
-#-------------------------Blog------------------------------------
-#--------------------------------------------------------------------
-
-class PostListSerializer(serializers.ModelSerializer):
+class CompanyProfileCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Post
-        fields = "__all__"
-
-
-class PostCommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PostComment
-        exclude = ["post",]
-
-
-class PostRetrieveSerializer(serializers.ModelSerializer):
-    tags = TagListSerializerField()
-    post_comments = PostCommentSerializer(many=True, read_only=True)
-    
-    class Meta:
-        model = Post
-        fields = ['author', 'title', 'category', 'body', 'images','tags',
-                  'post_comments', 'created', 'updated',]
-
-
-class PostUpdateSerializer(serializers.ModelSerializer):
-    tags = TagListSerializerField()
-
-    class Meta:
-        model = Post
-        fields = ['author', 'title', 'category', 'body', 'images','tags',
-                  'created', 'updated',]
+        model = CompanyProfile
+        exclude = ['user', 'confirm', ]

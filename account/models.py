@@ -38,26 +38,27 @@ class Profile(models.Model):
     gender = models.CharField(max_length=25, choices=GENDER, blank=True, null=True, verbose_name="جنسیت")
 
     class Meta:
-        ordering = ['user',]
+        ordering = ['user', ]
         verbose_name_plural = "پروفایل مشتری ها"
         verbose_name = "پروفایل مشتری"
 
     def __str__(self):
-        return self.user.username
+        return self.user
 
 
 class CompanyProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cprofile', verbose_name="شرکت")
     image = models.ImageField(upload_to='Cprofile/%Y/%m/%d/', blank=True, null=True, verbose_name="عکس پروفال")
-    home_phone_number = models.CharField(max_length=13, validators=[REGEX_HOME_PHONE_NUMBER], default=None, unique=True, verbose_name="شماره تلفن شرکت")
+    home_phone_number = models.CharField(max_length=13, validators=[REGEX_HOME_PHONE_NUMBER], default=None, unique=True,
+                                        verbose_name="شماره تلفن شرکت")
     bio = RichTextField(blank=True, null=True, verbose_name="درمورد شرکت")
     address_company = models.TextField(verbose_name="آدرس")
     confirm = models.BooleanField(default=False, verbose_name="تاییدیه شرکت")
 
     class Meta:
-        ordering = ['user',]
+        ordering = ['user', ]
         verbose_name_plural = "پروفایل فروشنده ها"
         verbose_name = "پروفایل فروشنده"
 
     def __str__(self):
-        return self.user.username
+        return self.user

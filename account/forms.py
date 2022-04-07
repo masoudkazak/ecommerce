@@ -2,11 +2,12 @@ from django.utils.translation import gettext_lazy as _
 from django import forms
 from .models import *
 from django.contrib.auth.forms import AuthenticationForm, UsernameField, PasswordChangeForm
-from django.contrib.auth import password_validation
+from django.contrib.auth import password_validation, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
 
 class UserCreateForm(UserCreationForm):
     password1 = forms.CharField(
@@ -45,6 +46,20 @@ class UserLoginForm(AuthenticationForm):
         strip=False,
         widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', "class":"form-control"}),
     )
+
+    def clean(self):
+        username = self.cleaned_data.get('username')
+        username = "09" + username[-9:]
+        password = self.cleaned_data.get('password')
+
+        if username is not None and password:
+            self.user_cache = authenticate(self.request, username=username, password=password)
+            if self.user_cache is None:
+                raise self.get_invalid_login_error()
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
 
 
 class UserPasswordChangeForm(PasswordChangeForm):
@@ -91,30 +106,17 @@ class ProfileCreateForm(forms.ModelForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        exclude = ['user',]
+        exclude = ['user', ]
         widgets = {
             'gender': forms.Select(attrs={"class":"form-select"}),
             "image": forms.FileInput(attrs={"class":"form-control"})
         }
 
 
-class CompanyProfileCreateForm(forms.ModelForm):
+class CompanyProfileForm(forms.ModelForm):
     class Meta:
         model = CompanyProfile
-        exclude = ['user', "confirm",]
-        widgets = {
-            'gender': forms.Select(attrs={"class":"form-select"}),
-            "image": forms.FileInput(attrs={"class":"form-control"}),
-            "home_phone_number":forms.TextInput(attrs={"class":"form-control"}),
-            "address_company":forms.Textarea(attrs={"class":"form-control"}),
-        }
-    
-
-
-class CompanyProfileUpdateForm(forms.ModelForm):
-    class Meta:
-        model = CompanyProfile
-        exclude = ['user', "confirm",]
+        exclude = ['user', "confirm", ]
         widgets = {
             'gender': forms.Select(attrs={"class":"form-select"}),
             "image": forms.FileInput(attrs={"class":"form-control"}),

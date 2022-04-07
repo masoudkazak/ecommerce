@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 
 from item.models import Item, Comment
-from blog.models import Post
 
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -16,9 +15,11 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-#--------------------------------------------------------------------
-#-------------------------Item---------------------------------------
-#--------------------------------------------------------------------
+# -------------------------------------------------------------------
+# -------------------------Item---------------------------------------
+# --------------------------------------------------------------------
+
+
 class ItemListAPIView(generics.ListAPIView):
     queryset = Item.objects.filter(status="p")
     serializer_class = ItemListSerializer
@@ -45,7 +46,7 @@ class ItemRetrieveAPIView(APIView):
         serializer = ItemDetailSerializer(self.get_object())
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    #update item
+    # update item
     def put(self, request, *args, **kwargs):
         item = self.get_object()
         serializer = ItemSerializerUpdate(item, data=request.data)
@@ -108,7 +109,7 @@ class ItemRetrieveAPIView(APIView):
 
 class ItemCreateAPIView(generics.CreateAPIView):
     serializer_class = ItemSerializerUpdate
-    permission_classes = [IsCompanyprofileOrSuperuser]
+    permission_classes = [IsCompanyProfileOrSuperuser]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -124,20 +125,20 @@ class ItemCreateAPIView(generics.CreateAPIView):
             company = request.user
         
             new_item = Item(
-                name = name,
-                category = category,
-                price = price,
-                body = body,
-                tags = tags,
-                company = company,
+                name=name,
+                category=category,
+                price=price,
+                body=body,
+                tags=tags,
+                company=company,
                 inventory=inventory,
             )
             new_item.save()
-            item = Item.objects.get(name = name,
-                price = price,
-                company = company,
-                inventory=inventory,
-                )
+            item = Item.objects.get(
+                name=name,
+                price=price,
+                company=company,
+                inventory=inventory,)
             for image in images:
                 Uploadimage.objects.create(image=image, item_id=item.id)
 
@@ -156,7 +157,6 @@ class ItemCreateAPIView(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
 class CommentCreateAPIView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentCreateSerializer
@@ -173,8 +173,8 @@ class CommentCreateAPIView(generics.CreateAPIView):
 class AddressCreateView(generics.CreateAPIView):
     serializer_class = AddressCreateSerializer
 
-    def post(self, requset, *args, **kwargs):
-        serializer = self.get_serializer(data=requset.data)
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             zip_code = serializer.validated_data['zip_code']
             home_address = serializer.validated_data['home_address']
@@ -183,17 +183,16 @@ class AddressCreateView(generics.CreateAPIView):
             body = serializer.validated_data['body']
             province = serializer.validated_data['province']
             city = serializer.validated_data['city']
-            user = requset.user
+            user = request.user
             new_address = Address.objects.create(
-                zip_code = zip_code,
-                home_address = home_address,
-                mobile_number = mobile_number,
-                body = body,
-                user = user,
-                this_address = False,
+                zip_code=zip_code,
+                home_address=home_address,
+                mobile_number=mobile_number,
+                body=body,
+                user=user,
+                this_address=False,
                 province=province,
-                city=city,
-            )
+                city=city,)
             new_address.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -209,11 +208,11 @@ class AddressListAPIView(generics.ListAPIView):
         count = 0
         # if there is bug, all addresses change to False
         for address in addresses:
-            if address.this_address == True:
+            if address.this_address:
                 count += 1
         if count > 1:
             for address in addresses:
-                if address.this_address == True:
+                if address.this_address:
                     address.this_address = False
                     address.save()
         return addresses
@@ -230,10 +229,10 @@ class AddressUpdateAPIView(generics.UpdateAPIView):
     queryset = Address.objects.all()
     
     def perform_update(self, serializer):
-        if serializer.validated_data['this_address'] == True:
+        if serializer.validated_data['this_address']:
             my_addresses = Address.objects.filter(user=self.request.user)
             for address in my_addresses:
-                if address.this_address == True:
+                if address.this_address:
                     address.this_address = False
                     address.save()
         serializer.save()
@@ -302,9 +301,9 @@ class OrderitemDeleteAPIView(generics.DestroyAPIView):
         return Response(serializer.data)
         
 
-#--------------------------------------------------------------------
-#-------------------------Account------------------------------------
-#--------------------------------------------------------------------
+# --------------------------------------------------------------------
+# -------------------------Account------------------------------------
+# --------------------------------------------------------------------
 class UserCreationAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreationSerializer
@@ -317,62 +316,51 @@ class UserRetrieveUpdateAPIView(generics.UpdateAPIView):
 
 
 class UserChangePasswordAPIView(generics.UpdateAPIView):
-        serializer_class = UserPasswordChangeSerializer
-        model = User
+    serializer_class = UserPasswordChangeSerializer
+    model = User
 
-        def get_object(self, queryset=None):
-            obj = self.request.user
-            return obj
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
 
-        def update(self, request, *args, **kwargs):
-            self.object = self.get_object()
-            serializer = self.get_serializer(data=request.data)
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
 
-            if serializer.is_valid():
-                if not self.object.check_password(serializer.data.get("old_password")):
-                    return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
-                if serializer.data.get('password1') != serializer.data.get('password2'):
-                    return Response({"passwords": ["Not same"]}, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            if not self.get_object().check_password(serializer.data.get("old_password")):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+            if serializer.data.get('password1') != serializer.data.get('password2'):
+                return Response({"passwords": ["Not same"]}, status=status.HTTP_400_BAD_REQUEST)
 
-                self.object.set_password(serializer.data.get("password1"))
-                self.object.save()
-                response = {
-                    'status': 'success',
-                    'code': status.HTTP_200_OK,
-                    'message': 'Password Change Done',
-                    'data': []
-                }
+            self.get_object().set_password(serializer.data.get("password1"))
+            self.get_object().save()
+            response = {
+                'status': 'success',
+                'code': status.HTTP_200_OK,
+                'message': 'Password Change Done',
+                'data': []
+            }
 
-                return Response(response)
+            return Response(response)
 
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CompanyProifleCreateAPIView(generics.CreateAPIView):
-    pass
+class CompanyProfileCreateAPIView(generics.CreateAPIView):
+    queryset = CompanyProfile.objects.all()
+    serializer_class = CompanyProfileCreateSerializer
+    permission_classes = [IsUserHasCPOrNot,]
+
+    def perform_create(self, serializer):
+        serializer.validated_data['home_phone_number'] = "0" + serializer.validated_data['home_phone_number'][-10:]
+        serializer.save(user=self.request.user)
+        return super().perform_create(serializer)
 
 
 class CompanyProfileUpdateAPIView(generics.UpdateAPIView):
-    pass
+    queryset = CompanyProfile.objects.all()
+    serializer_class = CompanyProfileCreateSerializer
 
-
-#--------------------------------------------------------------------
-#-------------------------Blog---------------------------------------
-#--------------------------------------------------------------------
-class PostListAPIView(generics.ListAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostListSerializer
-
-
-class PostRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostRetrieveSerializer
-
-
-class PostUpdateAPIView(generics.UpdateAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostUpdateSerializer
-
-
-class PostCreateAPIView(generics.CreateAPIView):
-    pass
+    def perform_update(self, serializer):
+        serializer.validated_data['home_phone_number'] = "0" + serializer.validated_data['home_phone_number'][-10:]
+        return super().perform_update(serializer)
