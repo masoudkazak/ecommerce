@@ -7,19 +7,17 @@ from .models import *
 class Admin(admin.ModelAdmin):
     list_display = ("name", "company", "price", "updated", "category", "status")
     list_filter = ("category", "company")
-    ordering = ["updated",]
-    search_fields = ["name", "company__username",]
+    ordering = ["updated"]
+    search_fields = ["name", "company__username"]
     
-    fieldsets = (
-        (None, {"fields": (('name', "category"),)}),
-        (None, {"fields": ("company",)}),
-        (None, {"fields": (("price", "inventory"),)}),
-        (None, {"fields": (("images", "color"),)}),
-        (None, {"fields": ("body",)}),
-        (None, {"fields": ("tags",)}),
-        (None, {"fields": ("discount",)}),
-        (None, {"fields": ("status",)}),
-    )
+    fieldsets = ((None, {"fields": (('name', "category"),)}),
+                 (None, {"fields": ("company",)}),
+                 (None, {"fields": (("price", "inventory"),)}),
+                 (None, {"fields": (("images", "color"),)}),
+                 (None, {"fields": ("body",)}),
+                 (None, {"fields": ("tags",)}),
+                 (None, {"fields": ("discount",)}),
+                 (None, {"fields": ("status",)}),)
     actions = ['make_published']
 
     @admin.action(description="انتشار")
@@ -30,26 +28,24 @@ class Admin(admin.ModelAdmin):
 @admin.register(Comment)
 class Admin(admin.ModelAdmin):
     list_display = ("user", "item", "date",)
-    search_fileds = ["user__username", "item", "text",]
-    ordering = ['date',]
+    search_fields = ["user__username", "item", "text", ]
+    ordering = ['date']
 
 
-@admin.register(Category)
-class Admin(admin.ModelAdmin):
-    pass
+admin.site.register(Category)
 
 
 @admin.register(OrderItem)
 class Admin(admin.ModelAdmin):
     list_display = ("customer", "item", "count",)
-    search_fields = ["customer__username", "item__name",]
+    search_fields = ["customer__username", "item__name", ]
     ordering = ['customer']
 
 
 @admin.register(Order)
 class Admin(admin.ModelAdmin):
     list_display = ("user", 'created',)
-    search_fields = ['user__username',]
+    search_fields = ['user__username', ]
     ordering = ["user"]
 
 
@@ -57,7 +53,7 @@ class Admin(admin.ModelAdmin):
 class Admin(admin.ModelAdmin):
     list_display = ("user", 'mobile_number', "province", "city", "this_address",)
     list_filter = ("province", "this_address",)
-    ordering = ['user',]
+    ordering = ['user']
     search_filter = ['user__username', "mobile_number", "city"]
     actions = ['make_active_address']
 
@@ -66,10 +62,5 @@ class Admin(admin.ModelAdmin):
         queryset.update(this_address=False)
 
 
-@admin.register(ColorItem)
-class Admin(admin.ModelAdmin):
-    pass
-
-@admin.register(Uploadimage)
-class Admin(admin.ModelAdmin):
-    pass
+admin.site.register(ColorItem)
+admin.site.register(Uploadimage)

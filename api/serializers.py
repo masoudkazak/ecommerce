@@ -22,6 +22,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class ImagesSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField("get_image_url")
+
     class Meta:
         model = Uploadimage
         fields = ['image']
@@ -37,7 +38,7 @@ class ItemDetailSerializer(TaggitSerializer, serializers.ModelSerializer):
     
     class Meta:
         model = Item
-        fields = ['name', 'company', 'price', 'body', 'images','tags', 'comments', 'category', "inventory"]
+        fields = ['name', 'company', 'price', 'body', 'images', 'tags', 'comments', 'category', "inventory"]
 
 
 class ItemSerializerUpdate(TaggitSerializer, serializers.ModelSerializer):
@@ -45,7 +46,7 @@ class ItemSerializerUpdate(TaggitSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['name', 'price', 'body', 'images','tags', 'category', "inventory", "color"]
+        fields = ['name', 'price', 'body', 'images', 'tags', 'category', "inventory", "color"]
 
 
 class ItemListSerializer(serializers.ModelSerializer):
@@ -60,16 +61,14 @@ class ItemListSerializer(serializers.ModelSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['text','item', 'user']
-        extra_kwargs = {
-            'user': {'read_only':True}
-        }
+        fields = ['text', 'item', 'user']
+        extra_kwargs = {'user': {'read_only': True}}
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ['count',]
+        fields = ['count', ]
 
 
 class AddressCreateSerializer(serializers.ModelSerializer):
@@ -77,11 +76,29 @@ class AddressCreateSerializer(serializers.ModelSerializer):
         model = Address
         exclude = ['user', 'this_address']
 
+    def create(self, validated_data):
+        address = super().create(validated_data)
+        address.mobile_number = "09" + validated_data.get("mobile_number")[-9:]
+        address.save()
+        return address
+
 
 class AddressUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        exclude = ['user',]
+        exclude = ['user', ]
+
+    def update(self, instance, validated_data):
+        instance.mobile_number = validated_data.get("mobile_number", instance.mobile_number)
+        instance.mobile_number = "09" + validated_data.get("mobile_number")[-9:]
+        instance.zip_code = validated_data.get("zip_code", instance.zip_code)
+        instance.home_address = validated_data.get("home_address", instance.home_address)
+        instance.body = validated_data.get("body", instance.body)
+        instance.this_address = validated_data.get("this_address", instance.this_address)
+        instance.province = validated_data.get("province", instance.province)
+        instance.city = validated_data.get("city", instance.city)
+        instance.save()
+        return instance
 
 
 class OrderItemDeleteSerializer(serializers.ModelSerializer):
@@ -97,16 +114,21 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['items',]
+        fields = ['items', ]
 
 
 # --------------------------------------------------------------------
 # -------------------------Account------------------------------------
 # --------------------------------------------------------------------
 class ProfileCreationSerializer(serializers.ModelSerializer):
+    # image = serializers.SerializerMethodField("get_image_url")
+
     class Meta:
         model = Profile
-        exclude = ['user', ]
+        fields = ['image', 'bio', 'gender']
+
+    # def get_image_url(self, obj):
+    #     return obj.image.url
 
 
 class UserCreationSerializer(serializers.ModelSerializer):
@@ -158,15 +180,9 @@ class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserPasswordChangeSerializer(serializers.Serializer):
-    old_password = serializers.CharField(
-        style={'input_type': 'password'}
-    )
-    password1 = serializers.CharField(
-        style={'input_type': 'password'}
-    )
-    password2 = serializers.CharField(
-        style={'input_type': 'password'}
-    )
+    old_password = serializers.CharField(style={'input_type': 'password'})
+    password1 = serializers.CharField(style={'input_type': 'password'})
+    password2 = serializers.CharField(style={'input_type': 'password'})
 
 
 class CompanyProfileCreateSerializer(serializers.ModelSerializer):

@@ -1,4 +1,3 @@
-from tkinter.messagebox import RETRY
 from django.db.models import Q
 from django.db import models
 

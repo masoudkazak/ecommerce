@@ -13,12 +13,12 @@ class UserCreateForm(UserCreationForm):
     password1 = forms.CharField(
         label=_("Password"),
         strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password',"class":"form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "form-control"}),
         help_text=password_validation.password_validators_help_text_html(),
     )
     password2 = forms.CharField(
         label=_("Password confirmation"),
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class":"form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "form-control"}),
         strip=False,
         help_text=_("Enter the same password as before, for verification."),
     )
@@ -26,9 +26,7 @@ class UserCreateForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', "first_name", "last_name", 'password1', 'password2']
-        widgets = {
-            'username': forms.TextInput(attrs={"class":"form-control"}),
-        }
+        widgets = {'username': forms.TextInput(attrs={"class": "form-control"})}
 
     def save(self, commit=True):
         user = super(UserCreateForm, self).save(commit=False)
@@ -40,11 +38,11 @@ class UserCreateForm(UserCreationForm):
 
 
 class UserLoginForm(AuthenticationForm):
-    username = UsernameField(widget=forms.TextInput(attrs={'autofocus': True, "class":"form-control"}))
+    username = UsernameField(widget=forms.TextInput(attrs={'autofocus': True, "class": "form-control"}))
     password = forms.CharField(
         label=_("Password"),
         strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', "class":"form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', "class": "form-control"}),
     )
 
     def clean(self):
@@ -65,61 +63,53 @@ class UserLoginForm(AuthenticationForm):
 class UserPasswordChangeForm(PasswordChangeForm):
     new_password1 = forms.CharField(
         label=_("New password"),
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class":"form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "form-control"}),
         strip=False,
         help_text=password_validation.password_validators_help_text_html(),
     )
     new_password2 = forms.CharField(
         label=_("New password confirmation"),
         strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class":"form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "form-control"}),
     )
     old_password = forms.CharField(
         label=_("Old password"),
         strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', 'autofocus': True, "class":"form-control"}),
-    )
+        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', 'autofocus': True,
+                                          "class": "form-control"}),)
 
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'username', 'email')
-        widgets = {
-            'first_name': forms.TextInput(attrs={"class":"form-control"}),
-            'last_name': forms.TextInput(attrs={"class":"form-control"}),
-            'username': forms.TextInput(attrs={"class":"form-control"}),
-            'email': forms.TextInput(attrs={"class":"form-control"}),
-        }
-    
+        widgets = {'first_name': forms.TextInput(attrs={"class": "form-control"}),
+                   'last_name': forms.TextInput(attrs={"class": "form-control"}),
+                   'username': forms.TextInput(attrs={"class": "form-control"}),
+                   'email': forms.TextInput(attrs={"class": "form-control"}), }
+
 
 class ProfileCreateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        exclude = ['user',]
-        widgets = {
-            'gender': forms.Select(attrs={"class":"form-select"}),
-            "image": forms.FileInput(attrs={"class":"form-control"})
-        }
+        exclude = ['user', ]
+        widgets = {'gender': forms.Select(attrs={"class": "form-select"}),
+                   "image": forms.FileInput(attrs={"class": "form-control"})}
 
 
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
         exclude = ['user', ]
-        widgets = {
-            'gender': forms.Select(attrs={"class":"form-select"}),
-            "image": forms.FileInput(attrs={"class":"form-control"})
-        }
+        widgets = {'gender': forms.Select(attrs={"class": "form-select"}),
+                   "image": forms.FileInput(attrs={"class": "form-control"})}
 
 
 class CompanyProfileForm(forms.ModelForm):
     class Meta:
         model = CompanyProfile
         exclude = ['user', "confirm", ]
-        widgets = {
-            'gender': forms.Select(attrs={"class":"form-select"}),
-            "image": forms.FileInput(attrs={"class":"form-control"}),
-            "home_phone_number":forms.TextInput(attrs={"class":"form-control"}),
-            "address_company":forms.Textarea(attrs={"class":"form-control"}),
-        }
+        widgets = {'gender': forms.Select(attrs={"class": "form-select"}),
+                   "image": forms.FileInput(attrs={"class": "form-control"}),
+                   "home_phone_number": forms.TextInput(attrs={"class": "form-control"}),
+                   "address_company": forms.Textarea(attrs={"class": "form-control"})}

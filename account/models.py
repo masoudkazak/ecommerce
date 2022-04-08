@@ -6,29 +6,22 @@ from .validators import UnicodeUsernameValidator
 from django.utils.translation import gettext_lazy as _
 
 
-GENDER = (
-    ("MALE", "مرد"),
-    ("FEMALE", "زن"),
-)
+GENDER = (("MALE", "مرد"),
+          ("FEMALE", "زن"))
 
-REGEX_HOME_PHONE_NUMBER = RegexValidator(
-    regex='^(\+98|0)?\d{10}$',
-    message="شماره وارد شده اشتباه است\n01712345678"
-)
+REGEX_HOME_PHONE_NUMBER = RegexValidator(regex='^(\+98|0)?\d{10}$', message="شماره وارد شده اشتباه است\n01712345678")
 
 
 class User(AbstractUser):
     username_validator = UnicodeUsernameValidator()
 
-    username = models.CharField(
-        _('شماره تلفن'),
-        max_length=13,
-        unique=True,
-        help_text=_('09123456789'),
-        validators=[username_validator],
-        error_messages={
-            'unique': _("A user with that mobile number already exists."),
-        },)
+    username = models.CharField(_('شماره تلفن'),
+                                max_length=13,
+                                unique=True,
+                                help_text=_('09123456789'),
+                                validators=[username_validator],
+                                error_messages={
+                                    'unique': _("A user with that mobile number already exists."),},)
 
 
 class Profile(models.Model):
@@ -43,14 +36,14 @@ class Profile(models.Model):
         verbose_name = "پروفایل مشتری"
 
     def __str__(self):
-        return self.user
+        return str(self.user)
 
 
 class CompanyProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cprofile', verbose_name="شرکت")
     image = models.ImageField(upload_to='Cprofile/%Y/%m/%d/', blank=True, null=True, verbose_name="عکس پروفال")
     home_phone_number = models.CharField(max_length=13, validators=[REGEX_HOME_PHONE_NUMBER], default=None, unique=True,
-                                        verbose_name="شماره تلفن شرکت")
+                                         verbose_name="شماره تلفن شرکت")
     bio = RichTextField(blank=True, null=True, verbose_name="درمورد شرکت")
     address_company = models.TextField(verbose_name="آدرس")
     confirm = models.BooleanField(default=False, verbose_name="تاییدیه شرکت")
@@ -61,4 +54,4 @@ class CompanyProfile(models.Model):
         verbose_name = "پروفایل فروشنده"
 
     def __str__(self):
-        return self.user
+        return str(self.user)

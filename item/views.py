@@ -14,7 +14,7 @@ from account.models import CompanyProfile
 class ItemListView(ListView):
     template_name = 'home.html'
     paginate_by = 8
-    
+
     def get_queryset(self):
         queryset = Item.objects.filter(status="p")
         return queryset
@@ -24,26 +24,22 @@ class ItemListView(ListView):
         context["items"] = self.get_queryset()
         context['search_form'] = ItemSearchForm()
         return context
-    
+
     def post(self, request, *args, **kwargs):
         if "search" in request.POST:
             search_form = ItemSearchForm(request.POST)
             if search_form.is_valid():
                 qs = Item.objects.search(query=search_form.cleaned_data['lookup']).filter(status="p")
-                ctxt = {"qs":qs,}
+                ctxt = {"qs": qs}
                 return render(request, "itemsearch.html", context=ctxt)
-            else:
-                return redirect("item:list")
+            return redirect("item:list")
 
 
 class ItemDetailView(View):
     template_name = 'itemdetail.html'
 
     def get_object(self):
-        item = get_object_or_404(Item,
-         name=self.kwargs['name'],
-         pk=self.kwargs['pk'],
-         )
+        item = get_object_or_404(Item, name=self.kwargs['name'], pk=self.kwargs['pk'])
         return item
 
     def get_context_data(self, **kwargs):
@@ -53,14 +49,14 @@ class ItemDetailView(View):
         if 'comment_form' not in kwargs:
             kwargs['comment_form'] = CommentForm()
         return kwargs
-    
+
     def get(self, request, *args, **kwargs):
         if self.get_object().status == "d":
             return redirect("item:list")
         return render(request, self.template_name, self.get_context_data())
-    
+
     def post(self, request, *args, **kwargs):
-        ctxt = {}
+        context = {}
         if 'comment' in request.POST:
             comment_form = CommentForm(request.POST)
 
@@ -68,14 +64,12 @@ class ItemDetailView(View):
                 text = comment_form.cleaned_data['text']
                 item = self.get_object()
                 user = request.user
-                new_comment = Comment(text=text,
-                                    item=item,
-                                    user=user)
+                new_comment = Comment(text=text, item=item, user=user)
                 new_comment.save()
                 messages.success(request, "کامت شما ثبت شد")
                 return redirect('item:detail', pk=item.pk, name=item.name)
             else:
-                ctxt['response_form'] = CommentForm
+                context['response_form'] = CommentForm
 
         elif 'orderitem' in request.POST:
             orderitem_form = OrderItemForm(request.POST)
@@ -92,12 +86,12 @@ class ItemDetailView(View):
                     messages.error(request, "این محصول شماست نمیتوانید به سبد خود ارسال کنید")
                     return redirect("item:detail", pk=item.pk, name=item.name)
 
-                try:      
+                try:
                     update_orderitem = OrderItem.objects.get(item=item)
                 except OrderItem.DoesNotExist:
                     new_orderitem = OrderItem.objects.create(item=item,
-                                        count=count,
-                                        customer=request.user)
+                                                             count=count,
+                                                             customer=request.user)
                     new_orderitem.save()
                 else:
                     update_orderitem.count += count
@@ -114,35 +108,32 @@ class ItemDetailView(View):
                 else:
                     update_order.items.add(OrderItem.objects.get(item=item))
                 messages.success(request, "به سبد اضافه شد")
-                return HttpResponseRedirect(reverse('item:detail', args=[item.name, item.id,]))
+                return HttpResponseRedirect(reverse('item:detail', args=[item.name, item.id, ]))
             else:
-                ctxt['response_form'] = CommentForm
+                context['response_form'] = CommentForm
 
         elif "deleteitem" in request.POST:
             item = self.get_object()
             item.delete()
             messages.success(request, "محصول شما حذف شد")
             return HttpResponseRedirect(reverse("item:list"))
-        
+
         elif "empty" in request.POST:
             item = self.get_object()
             item.inventory = 0
             item.save()
             messages.success(request, "محصول ناموجود شد")
-            return HttpResponseRedirect(reverse("item:detail", args=[item.name, item.id,]))
-        return render(request, self.template_name, self.get_context_data(**ctxt))
+            return HttpResponseRedirect(reverse("item:detail", args=[item.name, item.id, ]))
+        return render(request, self.template_name, self.get_context_data(**context))
 
 
 class ItemUpdateView(UpdateView):
-    form_class = ItemUpdateForm
+    form_class = ItemForm
     template_name = 'itemupdate.html'
     context_object_name = "item"
 
     def get_object(self):
-        item = get_object_or_404(Item,
-         name=self.kwargs['name'],
-         pk=self.kwargs['pk'],
-         )
+        item = get_object_or_404(Item, name=self.kwargs['name'], pk=self.kwargs['pk'])
         return item
 
     def get_success_url(self):
@@ -151,7 +142,7 @@ class ItemUpdateView(UpdateView):
 
 
 class ItemCreateView(View):
-    form_class = ItemCreateForm
+    form_class = ItemForm
     template_name = 'itemcreate.html'
 
     def get(self, request, *args, **kwargs):
@@ -161,43 +152,31 @@ class ItemCreateView(View):
             except CompanyProfile.DoesNotExist:
                 return redirect("item:list")
             else:
-                if cprofile.confirm == False:
+                if not cprofile.confirm:
                     return redirect("item:list")
         form = self.form_class()
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
-        images = request.FILES.getlist("images")
         if form.is_valid():
-            name = form.cleaned_data['name']
-            category = form.cleaned_data['category']
-            price = form.cleaned_data['price']
-            body = form.cleaned_data['body']
-            tags = form.cleaned_data['tags']
-            inventory = form.cleaned_data['inventory']
-            colors = form.cleaned_data['color']
-            company = request.user
-        
-            new_item = Item(
-                name = name,
-                category = category,
-                price = price,
-                body = body,
-                tags = tags,
-                company = company,
-                inventory=inventory,
-            )
+            new_item = Item.objects.create(name=form.cleaned_data['name'],
+                                category=form.cleaned_data['category'],
+                                price=form.cleaned_data['price'],
+                                body=form.cleaned_data['body'],
+                                tags=form.cleaned_data['tags'],
+                                company=request.user,
+                                inventory=form.cleaned_data['inventory'])
             new_item.save()
-            item = Item.objects.get(name = name,
-                price = price,
-                company = company,
-                inventory=inventory,
-                )
-            for image in images:
+            item = Item.objects.get(name=form.cleaned_data['name'],
+                                    price=form.cleaned_data['price'],
+                                    company=request.user,
+                                    inventory=form.cleaned_data['inventory'],)
+
+            for image in request.FILES.getlist("images"):
                 Uploadimage.objects.create(image=image, item_id=item.id)
 
-            for color in colors:
+            for color in form.cleaned_data['color']:
                 item.color.add(color)
 
             images_list = Uploadimage.objects.filter(item_id=item.id)
@@ -210,37 +189,37 @@ class ItemCreateView(View):
         return render(request, self.template_name, {'form': form})
 
 
-class AddressView(LoginRequiredMixin ,View):
+class AddressView(LoginRequiredMixin, View):
     template_name = "addresslist.html"
     login_url = "/account/login/"
 
     def get_object(self):
-        addresses =Address.objects.filter(user=self.request.user)
+        addresses = Address.objects.filter(user=self.request.user)
         count = 0
         # if there is bug, all addresses change to False
         for address in addresses:
-            if address.this_address == True:
+            if address.this_address:
                 count += 1
         if count > 1:
             for address in addresses:
-                if address.this_address == True:
+                if address.this_address:
                     address.this_address = False
                     address.save()
         return addresses
-    
+
     def get_context_data(self, **kwargs):
         kwargs['addresses'] = self.get_object()
         return kwargs
-    
+
     def get(self, request, *args, **kwargs):
         if not self.get_object().exists():
             messages.info(request, "شما آدرسی نساخته اید")
             return redirect('item:addresscreate')
         return render(request, self.template_name, self.get_context_data())
-    
+
     def post(self, request, *args, **kwargs):
-        ctxt = {}
-        
+        context = {}
+
         if 'choose' in request.POST:
             if 'fav-language' in request.POST:
                 home_address = request.POST['fav-language']
@@ -254,13 +233,12 @@ class AddressView(LoginRequiredMixin ,View):
                         address.save()
                 messages.success(request, "آدرس شما انتخاب شد")
                 return HttpResponseRedirect(reverse('item:address'))
-            else:
-                messages.error(request, "آدرسی انتخاب نکردید")
-                return redirect("item:address")
-        return render(request, self.template_name, self.get_context_data(**ctxt))
+            messages.error(request, "آدرسی انتخاب نکردید")
+            return redirect("item:address")
+        return render(request, self.template_name, self.get_context_data(**context))
 
 
-class AddressUpdateView(LoginRequiredMixin,UpdateView):
+class AddressUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "addressupdate.html"
     form_class = AddressUpdateForm
     login_url = "/account/login/"
@@ -269,15 +247,14 @@ class AddressUpdateView(LoginRequiredMixin,UpdateView):
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "آدرس شما با موفقیت ویرایش شد")
         return reverse("item:address")
-    
+
     def post(self, request, *args, **kwargs):
         if "delete" in request.POST:
-            address = self.get_object()
-            address.delete()
+            self.get_object().delete()
             messages.success(request, "آدرش شما حذف شد")
             return HttpResponseRedirect(reverse("item:address"))
         return super().post(request, *args, **kwargs)
-    
+
     def get(self, request, *args, **kwargs):
         if request.user != self.get_object().user:
             return redirect("item:list")
@@ -287,48 +264,41 @@ class AddressUpdateView(LoginRequiredMixin,UpdateView):
 class AddressCreateView(LoginRequiredMixin, View):
     form_class = AddressCreateForm
     template_name = "addresscreate.html"
-    
+
     def get(self, request, *args, **kwargs):
         form = self.form_class()
         return render(request, self.template_name, {'form': form})
-    
-    def post(self, requset, *args, **kwargs):
-        form = AddressCreateForm(requset.POST)
+
+    def post(self, request, *args, **kwargs):
+        form = AddressCreateForm(request.POST)
         if form.is_valid():
-            zip_code = form.cleaned_data['zip_code']
-            home_address = form.cleaned_data['home_address']
-            mobile_number = form.cleaned_data['mobile_number']
-            mobile_number = "09" + mobile_number[-9:]
-            body = form.cleaned_data['body']
-            user = requset.user
             new_address = Address.objects.create(
-                zip_code = zip_code,
-                home_address = home_address,
-                mobile_number = mobile_number,
-                body = body,
-                user = user,
-                this_address = False,
+                zip_code=form.cleaned_data['zip_code'],
+                home_address=form.cleaned_data['home_address'],
+                mobile_number="09" + form.cleaned_data['mobile_number'][-9:],
+                body=form.cleaned_data['body'],
+                user=request.user,
+                this_address=False,
             )
             new_address.save()
             messages.success(self.request, "آدرس جدید اضافه شد")
             return HttpResponseRedirect(reverse("item:address"))
-            
-        return render(requset, self.template_name, {"form":form})
+        return render(request, self.template_name, {"form": form})
 
 
-class BasketView(LoginRequiredMixin ,View):
+class BasketView(LoginRequiredMixin, View):
     template_name = "basket.html"
     login_url = "/account/login/"
 
     def get_object(self):
-        order =Order.objects.get(user=self.request.user)
+        order = Order.objects.get(user=self.request.user)
         return order
-    
+
     def get_context_data(self, **kwargs):
         kwargs['order'] = self.get_object()
         kwargs['active_address'] = Address.objects.get(user=self.request.user, this_address=True)
         return kwargs
-    
+
     def get(self, request, *args, **kwargs):
         try:
             self.get_object()
@@ -339,7 +309,6 @@ class BasketView(LoginRequiredMixin ,View):
         if not self.get_object().items.all().exists():
             messages.info(request, "سبد شما خالی است")
             return redirect('account:dashboard')
-
         try:
             self.get_context_data()['active_address']
         except Address.DoesNotExist:
@@ -348,9 +317,8 @@ class BasketView(LoginRequiredMixin ,View):
                 return redirect("item:addresscreate")
             messages.info(request, "آدرسی انتخاب نکرده اید")
             return redirect("item:address")
-
         return render(request, self.template_name, self.get_context_data())
-    
+
     def post(self, request, *args, **kwargs):
         item_list = self.get_object().items.all()
         for item in item_list:
@@ -358,7 +326,7 @@ class BasketView(LoginRequiredMixin ,View):
             if delete in request.POST:
                 item.delete()
                 messages.success(request, "محصول مورد نظر حذف گردید")
-                return HttpResponseRedirect(reverse("item:basket")) 
+                return HttpResponseRedirect(reverse("item:basket"))
             x = int(request.POST[str(item.id)])
             if x > item.item.inventory:
                 messages.error(request, "بیش از حد ظرفیت موجود")
@@ -372,11 +340,11 @@ class BasketView(LoginRequiredMixin ,View):
 class MyItemListView(LoginRequiredMixin, ListView):
     template_name = "my_item.html"
     context_object_name = "items"
-    
+
     def get_queryset(self):
         items = Item.objects.filter(company=self.request.user).order_by("status")
         return items
-    
+
     def get(self, request, *args, **kwargs):
         if not self.get_queryset().exists():
             messages.info(request, "محصولی وجود ندارد")

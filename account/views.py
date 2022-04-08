@@ -1,19 +1,16 @@
 from django.shortcuts import redirect, get_object_or_404, render
 from django.views import View
-from django.views.generic import (
-    CreateView,
-    UpdateView,
-)
-
-from .models import *
-from .forms import *
+from django.views.generic import (CreateView, UpdateView)
 from django.urls import reverse
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.http import HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.contrib.auth import logout
-from django.contrib.auth import get_user_model
+from django.contrib.auth import logout, get_user_model
+
+from .forms import *
+from .models import *
+
 
 User = get_user_model()
 
@@ -72,6 +69,7 @@ class UserUpdateView(UpdateView):
 
 class ProfielCreateView(View):
     template_name = 'profile-create.html'
+    form_class = ProfileCreateForm
 
     def get_object(self):
         user = get_object_or_404(User, username=self.kwargs['username'])
@@ -80,7 +78,7 @@ class ProfielCreateView(View):
     def get_context_data(self, **kwargs):
         kwargs['user'] = self.get_object()
         if "form" not in kwargs:
-            kwargs['form'] = ProfileCreateForm
+            kwargs['form'] = self.form_class
         return kwargs
     
     def get(self, request, *args, **kwargs):
@@ -94,25 +92,20 @@ class ProfielCreateView(View):
             return redirect("item:list")
     
     def post(self, request, *args, **kwargs):
-        ctxt = {}
-        form = ProfileCreateForm(request.POST, request.FILES)
+        context = {}
+        form = self.form_class(request.POST, request.FILES)
         if form.is_valid():
             image = form.cleaned_data['image']
             bio = form.cleaned_data['bio']
             gender = form.cleaned_data['gender']
             user = self.get_object()
-            new_profile = Profile(
-                image = image,
-                bio = bio,
-                gender = gender,
-                user = user,
-            )
+            new_profile = Profile(image=image, bio=bio, gender=gender, user=user,)
             new_profile.save()
             messages.success(request, "پروفایل با موفقیت ثبت شد")
             return HttpResponseRedirect(reverse("account:dashboard"))
-        else:
-            ctxt['form'] = ProfileCreateForm
-        return render(request, self.template_name, self.get_context_data(**ctxt))
+
+        context['form'] = self.form_class
+        return render(request, self.template_name, self.get_context_data(**context))
 
 
 class ProfileUpdateView(UpdateView):
@@ -121,10 +114,7 @@ class ProfileUpdateView(UpdateView):
     form_class = ProfileUpdateForm
 
     def get_object(self, *args, **kwargs):
-        return get_object_or_404(
-            Profile,
-            user__username=self.kwargs['username']
-        )
+        return get_object_or_404(Profile, user__username=self.kwargs['username'])
 
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "پروفایل با موفقیت ویرایش شد")
@@ -165,7 +155,7 @@ class CompanyProfielCreateView(View):
         return render(request, self.template_name, self.get_context_data())
     
     def post(self, request, *args, **kwargs):
-        ctxt = {}
+        context = {}
         form = self.form_class(request.POST, request.FILES)
         if form.is_valid():
             image = form.cleaned_data['image']
@@ -179,10 +169,10 @@ class CompanyProfielCreateView(View):
                 address_company = form.cleaned_data['address_company']
                 user = self.get_object()
                 new_profile = CompanyProfile(user=user,
-                                    image=image,
-                                    bio=bio,
-                                    address_company=address_company,
-                                    home_phone_number=home_phone_number)
+                                             image=image,
+                                             bio=bio,
+                                             address_company=address_company,
+                                             home_phone_number=home_phone_number)
                 new_profile.save()
                 try:
                     profile = Profile.objects.get(user=request.user)
@@ -193,21 +183,18 @@ class CompanyProfielCreateView(View):
                 messages.success(request, "ثبت نام با موفقیت انجام شد. پس از تایید پروفایل می توایند محصول اضافه کنید.")
                 return HttpResponseRedirect(reverse("account:dashboard"))
         else:
-            ctxt['form'] = self.form_class
+            context['form'] = self.form_class
 
-        return render(request, self.template_name, self.get_context_data(**ctxt))
+        return render(request, self.template_name, self.get_context_data(**context))
 
 
 class CompanyProfileUpdateView(UpdateView):
     model = CompanyProfile
-    template_name  = "cprofile-update.html"
+    template_name = "cprofile-update.html"
     form_class = CompanyProfileForm
 
     def get_object(self, *args, **kwargs):
-        return get_object_or_404(
-            CompanyProfile,
-            user__username=self.kwargs['username']
-        )
+        return get_object_or_404(CompanyProfile, user__username=self.kwargs['username'])
     
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "پروفایل با موفقیت ویرایش شد")

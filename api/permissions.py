@@ -21,11 +21,7 @@ class IsOwnerOrSuperuserOrReadonly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-
-        return (obj.company == request.user
-                or
-                request.user.is_superuser
-                )
+        return obj.company == request.user or request.user.is_superuser
 
 # CP = CompanyProfile
 class IsUserHasCPOrNot(permissions.BasePermission):

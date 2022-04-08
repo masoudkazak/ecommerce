@@ -9,15 +9,10 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-PHONE_NUMBER_REGEX = RegexValidator(
-    regex="^(\+98|0)?9\d{9}$",
-    message="شماره وارد شده اشتباه است\n09123456789",
-)
+PHONE_NUMBER_REGEX = RegexValidator(regex="^(\+98|0)?9\d{9}$", message="شماره وارد شده اشتباه است\n09123456789",)
 
-ITEM_STATUS = (
-    ('p', "منتشر"),
-    ("d", "پیش نویس"),
-)
+ITEM_STATUS = (('p', "منتشر"),
+               ("d", "پیش نویس"),)
 
 
 class Category(models.Model):
