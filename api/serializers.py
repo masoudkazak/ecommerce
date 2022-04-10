@@ -121,14 +121,9 @@ class OrderSerializer(serializers.ModelSerializer):
 # -------------------------Account------------------------------------
 # --------------------------------------------------------------------
 class ProfileCreationSerializer(serializers.ModelSerializer):
-    # image = serializers.SerializerMethodField("get_image_url")
-
     class Meta:
         model = Profile
         fields = ['image', 'bio', 'gender']
-
-    # def get_image_url(self, obj):
-    #     return obj.image.url
 
 
 class UserCreationSerializer(serializers.ModelSerializer):
@@ -154,29 +149,18 @@ class UserCreationSerializer(serializers.ModelSerializer):
 
 
 class UserRetrieveUpdateSerializer(serializers.ModelSerializer):
-    profile = ProfileCreationSerializer()
-
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'profile']
+        fields = ['first_name', 'last_name', 'username', 'email']
 
     def update(self, instance, validated_data):
-        profile_data = validated_data.pop("profile")
         instance.email = validated_data.get('email', instance.email)
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.username = validated_data.get('username', instance.username)
         instance.username = "09" + instance.username[-9:] 
         instance.save()
-        user = User.objects.get(pk=instance.pk)
-        try:
-            Profile.objects.get(user=user)
-        except Profile.DoesNotExist:
-            Profile.objects.create(user=user, **profile_data)
-            return instance
-        else:
-            Profile.objects.update(user=user, **profile_data)
-            return instance
+        return instance
 
 
 class UserPasswordChangeSerializer(serializers.Serializer):

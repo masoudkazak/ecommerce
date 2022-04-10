@@ -5,11 +5,12 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework import filters
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .serializers import *
 from .permissions import *
-from item.models import Item, Comment
+from item.models import *
+from account.models import Profile
 
 User = get_user_model()
 
@@ -23,20 +24,18 @@ class ItemListAPIView(generics.ListAPIView):
     serializer_class = ItemListSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ["name"]
-    permission_classes = [AllowAny, ]
+    permission_classes = [AllowAny]
 
 
 class ItemRetrieveAPIView(APIView):
     permission_classes = [IsOwnerOrSuperuserOrReadonly]
 
     def get_object(self):
-        item = get_object_or_404(Item, pk=self.kwargs['pk'])
+        item = get_object_or_404(Item, pk=self.kwargs['pk'], status="p")
         return item
 
     # details of item
     def get(self, request, *args, **kwargs):
-        if self.get_object().status == "d":
-            return Response({"message": "به اين محصول دسترسي نداريد"}, status=status.HTTP_403_FORBIDDEN)
         serializer = ItemDetailSerializer(self.get_object())
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -98,7 +97,7 @@ class ItemRetrieveAPIView(APIView):
 
 class ItemCreateAPIView(generics.CreateAPIView):
     serializer_class = ItemSerializerUpdate
-    permission_classes = [IsCompanyProfileOrSuperuser]
+    permission_classes = [IsAuthenticated, IsCompanyProfileOrSuperuser]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -169,6 +168,7 @@ class AddressCreateView(generics.CreateAPIView):
 
 class AddressListAPIView(generics.ListAPIView):
     serializer_class = AddressUpdateSerializer
+    permission_classes = [IsAuthenticated, IsUserHasAddress]
 
     def get_queryset(self):
         addresses =Address.objects.filter(user=self.request.user)
@@ -183,15 +183,9 @@ class AddressListAPIView(generics.ListAPIView):
                     address.this_address = False
                     address.save()
         return addresses
-    
-    def get(self, request, *args, **kwargs):
-        if not self.get_queryset().exists():
-            return Response({"message": "آدرسي وجود ندارد"}, status=status.HTTP_204_NO_CONTENT)
-        serializer = self.get_serializer(self.get_queryset(), many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class AddressUpdateAPIView(generics.UpdateAPIView):
+class AddressUpdateAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AddressUpdateSerializer
     queryset = Address.objects.all()
     
@@ -203,63 +197,30 @@ class AddressUpdateAPIView(generics.UpdateAPIView):
                     address.this_address = False
                     address.save()
         serializer.save()
-    
-    def delete(self, request, *args, **kwargs):
-        self.get_object().delete()
-        return Response({"message": "آدرس شما حذف شد"}, status=status.HTTP_200_OK)
 
 
-class BasketView(APIView):
-    def get_object(self):
-        order =Order.objects.get(user=self.request.user)
-        return order
-    
-    def get(self, request, *args, **kwargs):
-        try:
-            self.get_object()
-        # if user does have not a basket ever
-        except Order.DoesNotExist:
-            return Response({"message": "سبد خالي است"}, status=status.HTTP_204_NO_CONTENT)
-        # if user before had a basket but now is empty
-        if not self.get_object().items.all().exists():
-            return Response({"message": "سبد خالي است"}, status=status.HTTP_204_NO_CONTENT)
-
-        # if User did not choose an address or did not create an address
-        try:
-            Address.objects.get(user=self.request.user, this_address=True)
-        except Address.DoesNotExist:
-            if not Address.objects.filter(user=request.user).exists():
-                return Response({"message": "آدرسی نساخته اید"}, status=status.HTTP_403_FORBIDDEN)
-            return Response({"message": "آدرسی انتخاب نکرده اید"}, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = OrderSerializer(self.get_object())
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class BasketView(generics.RetrieveUpdateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated, IsUserHasAddress, BasketPermission]
 
 
 class MyItemListView(generics.ListAPIView):
     serializer_class = ItemListSerializer
+    permission_classes = [IsAuthenticated, MyItemPermission]
 
     def get_queryset(self):
         MyItems = Item.objects.filter(company=self.request.user).order_by("status")
         return MyItems
-    
-    def get(self, request, *args, **kwargs):
-        if not self.get_queryset().exists():
-            return Response({"message":"محصولي وجود ندارد"}, status=status.HTTP_204_NO_CONTENT)
-        serializer = self.get_serializer(self.get_queryset(), many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class OrderitemDeleteAPIView(generics.DestroyAPIView):
+class OrderitemRetrieveDestroyAPIView(generics.DestroyAPIView):
     serializer_class = OrderItemDeleteSerializer
+    permission_classes = [IsAuthenticated, OwnerDeleteOrderItem]
 
     def get_object(self):
         orderitem = get_object_or_404(OrderItem, customer=self.kwargs['customer'], pk=self.kwargs['pk'])
         return orderitem
-    
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.get_object())
-        return Response(serializer.data)
         
 
 # --------------------------------------------------------------------
@@ -268,12 +229,19 @@ class OrderitemDeleteAPIView(generics.DestroyAPIView):
 class UserCreationAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreationSerializer
-    permission_classes = [AllowAny, ]
+    permission_classes = [NotAuthenticated]
 
 
 class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRetrieveUpdateSerializer
+    permission_classes = [IsAuthenticated, OwnerUser]
+
+
+class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileCreationSerializer
+    permission_classes = [IsAuthenticated, ProfileUpdatePermission]
 
 
 class UserChangePasswordAPIView(generics.UpdateAPIView):
@@ -306,7 +274,7 @@ class UserChangePasswordAPIView(generics.UpdateAPIView):
 class CompanyProfileCreateAPIView(generics.CreateAPIView):
     queryset = CompanyProfile.objects.all()
     serializer_class = CompanyProfileCreateSerializer
-    permission_classes = [IsUserHasCPOrNot, ]
+    permission_classes = [IsAuthenticated, IsUserHasCPOrNot]
 
     def perform_create(self, serializer):
         serializer.validated_data['home_phone_number'] = "0" + serializer.validated_data['home_phone_number'][-10:]
@@ -317,6 +285,7 @@ class CompanyProfileCreateAPIView(generics.CreateAPIView):
 class CompanyProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     queryset = CompanyProfile.objects.all()
     serializer_class = CompanyProfileCreateSerializer
+    permission_classes = [IsAuthenticated, CompanyProfileUpdatePermission]
 
     def perform_update(self, serializer):
         serializer.validated_data['home_phone_number'] = "0" + serializer.validated_data['home_phone_number'][-10:]

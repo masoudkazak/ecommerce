@@ -146,7 +146,7 @@ class CompanyProfielCreateView(View):
     def get_context_data(self, **kwargs):
         kwargs['user'] = self.get_object()
         if "form" not in kwargs:
-            kwargs['form'] = self.form_class()
+            kwargs['form'] = self.form_class
         return kwargs
     
     def get(self, request, *args, **kwargs):
@@ -158,21 +158,17 @@ class CompanyProfielCreateView(View):
         context = {}
         form = self.form_class(request.POST, request.FILES)
         if form.is_valid():
-            image = form.cleaned_data['image']
             home_phone_number = form.cleaned_data['home_phone_number']
-            # 01732240742
+            # 02134567899
             home_phone_number = "0" + home_phone_number[-10:]
             try:
-                cp = CompanyProfile.objects.get(home_phone_number=home_phone_number)
+                CompanyProfile.objects.get(home_phone_number=home_phone_number)
             except CompanyProfile.DoesNotExist:
-                bio = form.cleaned_data['bio']
-                address_company = form.cleaned_data['address_company']
-                user = self.get_object()
-                new_profile = CompanyProfile(user=user,
-                                             image=image,
-                                             bio=bio,
-                                             address_company=address_company,
-                                             home_phone_number=home_phone_number)
+                new_profile = CompanyProfile.objects.create(user=self.get_object(),
+                                                            image=form.cleaned_data['image'],
+                                                            bio=form.cleaned_data['bio'],
+                                                            address_company=form.cleaned_data['address_company'],
+                                                            home_phone_number=home_phone_number)
                 new_profile.save()
                 try:
                     profile = Profile.objects.get(user=request.user)
@@ -182,6 +178,8 @@ class CompanyProfielCreateView(View):
                 profile.delete()
                 messages.success(request, "ثبت نام با موفقیت انجام شد. پس از تایید پروفایل می توایند محصول اضافه کنید.")
                 return HttpResponseRedirect(reverse("account:dashboard"))
+            messages.info(request, "این شماره تلفن از قبل موجود است")
+            return redirect("account:companyprofilecreate", username=self.get_object())
         else:
             context['form'] = self.form_class
 
