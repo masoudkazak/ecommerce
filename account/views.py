@@ -69,16 +69,22 @@ class UserUpdateView(UpdateView):
 
 class ProfielCreateView(View):
     template_name = 'profile-create.html'
-    form_class = ProfileCreateForm
 
     def get_object(self):
         user = get_object_or_404(User, username=self.kwargs['username'])
         return user
-    
+
+    def get_form_class(self):
+        form = ProfileCreateForm
+        if not self.request.user.is_superuser:
+            form.fields.pop("user")
+            return form
+        return form
+
     def get_context_data(self, **kwargs):
         kwargs['user'] = self.get_object()
         if "form" not in kwargs:
-            kwargs['form'] = self.form_class
+            kwargs['form'] = self.get_form_class()
         return kwargs
     
     def get(self, request, *args, **kwargs):
@@ -93,18 +99,21 @@ class ProfielCreateView(View):
     
     def post(self, request, *args, **kwargs):
         context = {}
-        form = self.form_class(request.POST, request.FILES)
+        form = self.get_form_class()(request.POST, request.FILES)
         if form.is_valid():
             image = form.cleaned_data['image']
             bio = form.cleaned_data['bio']
             gender = form.cleaned_data['gender']
-            user = self.get_object()
+            if not request.user.is_superuser:
+                user = request.user
+            else:
+                user = form.cleaned_data['user']
             new_profile = Profile(image=image, bio=bio, gender=gender, user=user,)
             new_profile.save()
             messages.success(request, "پروفایل با موفقیت ثبت شد")
             return HttpResponseRedirect(reverse("account:dashboard"))
 
-        context['form'] = self.form_class
+        context['form'] = self.get_form_class()
         return render(request, self.template_name, self.get_context_data(**context))
 
 
@@ -112,6 +121,13 @@ class ProfileUpdateView(UpdateView):
     model = Profile
     template_name = 'Profile-update.html'
     form_class = ProfileUpdateForm
+
+    def get_form(self, form_class=None):
+        form = super(ProfileUpdateView, self).get_form(form_class)
+        if not self.request.user.is_superuser:
+            form.fields.pop("user")
+            return form
+        return form
 
     def get_object(self, *args, **kwargs):
         return get_object_or_404(Profile, user__username=self.kwargs['username'])
@@ -125,28 +141,32 @@ class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     template_name = 'password_change.html'
     form_class = UserPasswordChangeForm
     login_url = "account:login"
-    
+
     def get_success_url(self):
         logout(self.request)
         messages.add_message(self.request, messages.SUCCESS, "گذرواژه با موفقیت تغییر کرد")
         return reverse('account:login')
-    
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
 
 
 class CompanyProfielCreateView(View):
     template_name = 'cprofile-create.html'
-    form_class = CompanyProfileForm
 
     def get_object(self):
         user = get_object_or_404(User, username=self.kwargs['username'])
         return user
-    
+
+    def get_form_class(self):
+        form = CompanyProfileForm
+        if not self.request.user.is_superuser:
+            form.fields.pop("user")
+            form.fields.pop("confirm")
+            return form
+        return form
+
     def get_context_data(self, **kwargs):
         kwargs['user'] = self.get_object()
         if "form" not in kwargs:
-            kwargs['form'] = self.form_class
+            kwargs['form'] = self.get_form_class()
         return kwargs
     
     def get(self, request, *args, **kwargs):
@@ -156,7 +176,7 @@ class CompanyProfielCreateView(View):
     
     def post(self, request, *args, **kwargs):
         context = {}
-        form = self.form_class(request.POST, request.FILES)
+        form = self.get_form_class()(request.POST, request.FILES)
         if form.is_valid():
             home_phone_number = form.cleaned_data['home_phone_number']
             # 02134567899
@@ -164,24 +184,31 @@ class CompanyProfielCreateView(View):
             try:
                 CompanyProfile.objects.get(home_phone_number=home_phone_number)
             except CompanyProfile.DoesNotExist:
-                new_profile = CompanyProfile.objects.create(user=self.get_object(),
+                if request.user.is_superuser:
+                    user = form.cleaned_data['user']
+                    confirm = form.cleaned_data['confirm']
+                else:
+                    user = self.request.user
+                    confirm = False
+                new_profile = CompanyProfile.objects.create(user=user,
                                                             image=form.cleaned_data['image'],
                                                             bio=form.cleaned_data['bio'],
                                                             address_company=form.cleaned_data['address_company'],
-                                                            home_phone_number=home_phone_number)
+                                                            home_phone_number=home_phone_number,
+                                                            confirm=confirm)
                 new_profile.save()
                 try:
-                    profile = Profile.objects.get(user=request.user)
+                    profile = Profile.objects.get(user=user)
                 except Profile.DoesNotExist:
                     messages.success(request, "ثبت نام با موفقیت انجام شد. پس از تایید پروفایل می توایند محصول اضافه کنید.")
                     return HttpResponseRedirect(reverse("account:dashboard"))
                 profile.delete()
                 messages.success(request, "ثبت نام با موفقیت انجام شد. پس از تایید پروفایل می توایند محصول اضافه کنید.")
                 return HttpResponseRedirect(reverse("account:dashboard"))
-            messages.info(request, "این شماره تلفن از قبل موجود است")
-            return redirect("account:companyprofilecreate", username=self.get_object())
+                messages.info(request, "این شماره تلفن از قبل موجود است")
+                return redirect("account:companyprofilecreate", username=user)
         else:
-            context['form'] = self.form_class
+            context['form'] = self.get_form_class()
 
         return render(request, self.template_name, self.get_context_data(**context))
 
@@ -193,6 +220,14 @@ class CompanyProfileUpdateView(UpdateView):
 
     def get_object(self, *args, **kwargs):
         return get_object_or_404(CompanyProfile, user__username=self.kwargs['username'])
+
+    def get_form(self, form_class=None):
+        form = super(CompanyProfileUpdateView, self).get_form(form_class)
+        if not self.request.user.is_superuser:
+            form.fields.pop("confirm")
+            form.fields.pop("user")
+            return form
+        return form
     
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "پروفایل با موفقیت ویرایش شد")

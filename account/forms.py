@@ -92,24 +92,27 @@ class UserUpdateForm(forms.ModelForm):
 class ProfileCreateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        exclude = ['user', ]
+        fields = "__all__"
         widgets = {'gender': forms.Select(attrs={"class": "form-select"}),
+                   'user': forms.Select(attrs={"class": "form-select"}),
                    "image": forms.FileInput(attrs={"class": "form-control"})}
 
 
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        exclude = ['user', ]
+        fields = "__all__"
         widgets = {'gender': forms.Select(attrs={"class": "form-select"}),
+                   'user': forms.Select(attrs={"class": "form-select"}),
                    "image": forms.FileInput(attrs={"class": "form-control"})}
 
 
 class CompanyProfileForm(forms.ModelForm):
     class Meta:
         model = CompanyProfile
-        exclude = ['user', "confirm", ]
+        fields = "__all__"
         widgets = {'gender': forms.Select(attrs={"class": "form-select"}),
+                   'user': forms.Select(attrs={"class": "form-select"}),
                    "image": forms.FileInput(attrs={"class": "form-control"}),
                    "home_phone_number": forms.TextInput(attrs={"class": "form-control"}),
-                   "address_company": forms.Textarea(attrs={"class": "form-control"})}
+                   "address_company": forms.Textarea(attrs={"class": "form-control"}),}
