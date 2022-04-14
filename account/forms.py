@@ -90,6 +90,12 @@ class UserUpdateForm(forms.ModelForm):
 
 
 class ProfileCreateForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        super(ProfileCreateForm, self).__init__(*args, **kwargs)
+        if not self.request.user.is_superuser:
+            self.fields.pop("user")
+
     class Meta:
         model = Profile
         fields = "__all__"
@@ -99,6 +105,12 @@ class ProfileCreateForm(forms.ModelForm):
 
 
 class ProfileUpdateForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        super(ProfileUpdateForm, self).__init__(*args, **kwargs)
+        if not self.request.user.is_superuser:
+            self.fields.pop("user")
+
     class Meta:
         model = Profile
         fields = "__all__"
@@ -108,6 +120,13 @@ class ProfileUpdateForm(forms.ModelForm):
 
 
 class CompanyProfileForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        super(CompanyProfileForm, self).__init__(*args, **kwargs)
+        if not self.request.user.is_superuser:
+            self.fields.pop("user")
+            self.fields.pop("confirm")
+
     class Meta:
         model = CompanyProfile
         fields = "__all__"

@@ -14,10 +14,10 @@ urlpatterns = [
     path('<str:username>/update/', UserUpdateView.as_view(), name='update'),
     path('passwordchange/', UserPasswordChangeView.as_view(), name='passwordchange'),
 
-    path('<str:username>/profile/create/', ProfielCreateView.as_view(), name='profilecreate'),
+    path('<str:username>/profile/create/', ProfileCreateView.as_view(), name='profilecreate'),
     path('<str:username>/profile/update/', ProfileUpdateView.as_view(), name='profileupdate'),
 
-    path('<str:username>/cprofile/create/', CompanyProfielCreateView.as_view(), name='companyprofilecreate'),
+    path('<str:username>/cprofile/create/', CompanyProfileCreateView.as_view(), name='companyprofilecreate'),
     path('<slug:username>/cprofile/update/', CompanyProfileUpdateView.as_view(), name='companyprofileupdate'),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
 ]

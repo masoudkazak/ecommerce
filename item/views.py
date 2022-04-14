@@ -136,41 +136,58 @@ class ItemUpdateView(UpdateView):
         item = get_object_or_404(Item, name=self.kwargs['name'], pk=self.kwargs['pk'])
         return item
 
+    def get_form_kwargs(self):
+        kwargs = super(ItemUpdateView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
     def get_success_url(self):
         messages.success(self.request, "محصول با موفقیت ویرایش شد")
         return reverse("account:dashboard")
 
 
-class ItemCreateView(View):
-    form_class = ItemForm
+class ItemCreateView(CreateView):
     template_name = 'itemcreate.html'
+    form_class = ItemForm
 
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_superuser:
-            try:
-                cprofile = CompanyProfile.objects.get(user=request.user)
-            except CompanyProfile.DoesNotExist:
-                return redirect("item:list")
-            else:
-                if not cprofile.confirm:
-                    return redirect("item:list")
-        form = self.form_class()
-        return render(request, self.template_name, {'form': form})
+    def get_form_kwargs(self):
+        kwargs = super(ItemCreateView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
+    # def get(self, request, *args, **kwargs):
+    #     if not request.user.is_superuser:
+    #         try:
+    #             cprofile = CompanyProfile.objects.get(user=request.user)
+    #         except CompanyProfile.DoesNotExist:
+    #             return redirect("item:list")
+    #         else:
+    #             if not cprofile.confirm:
+    #                 return redirect("item:list")
+    #     return render(request, self.template_name, self.get_context_data())
 
     def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST)
+        form = ItemForm(request.POST, request=request)
         if form.is_valid():
+            if not request.user.is_superuser:
+                company = request.user
+                status = "d"
+            else:
+                company = form.cleaned_data['company']
+                status = form.cleaned_data['status']
             new_item = Item.objects.create(name=form.cleaned_data['name'],
-                                category=form.cleaned_data['category'],
-                                price=form.cleaned_data['price'],
-                                body=form.cleaned_data['body'],
-                                tags=form.cleaned_data['tags'],
-                                company=request.user,
-                                inventory=form.cleaned_data['inventory'])
+                                           category=form.cleaned_data['category'],
+                                           price=form.cleaned_data['price'],
+                                           body=form.cleaned_data['body'],
+                                           tags=form.cleaned_data['tags'],
+                                           company=company,
+                                           inventory=form.cleaned_data['inventory'],
+                                           discount=form.cleaned_data['discount'],
+                                           status=status)
             new_item.save()
             item = Item.objects.get(name=form.cleaned_data['name'],
                                     price=form.cleaned_data['price'],
-                                    company=request.user,
+                                    company=company,
                                     inventory=form.cleaned_data['inventory'],)
 
             for image in request.FILES.getlist("images"):
@@ -240,9 +257,14 @@ class AddressView(LoginRequiredMixin, View):
 
 class AddressUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "addressupdate.html"
-    form_class = AddressUpdateForm
+    form_class = AddressForm
     login_url = "/account/login/"
     model = Address
+
+    def get_form_kwargs(self):
+        kwargs = super(AddressUpdateView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
 
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "آدرس شما با موفقیت ویرایش شد")
@@ -255,34 +277,38 @@ class AddressUpdateView(LoginRequiredMixin, UpdateView):
             return HttpResponseRedirect(reverse("item:address"))
         return super().post(request, *args, **kwargs)
 
-    def get(self, request, *args, **kwargs):
-        if request.user != self.get_object().user:
-            return redirect("item:list")
-        return super().get(request, *args, **kwargs)
 
-
-class AddressCreateView(LoginRequiredMixin, View):
-    form_class = AddressCreateForm
+class AddressCreateView(LoginRequiredMixin, CreateView):
+    form_class = AddressForm
     template_name = "addresscreate.html"
+    model = Address
 
-    def get(self, request, *args, **kwargs):
-        form = self.form_class()
-        return render(request, self.template_name, {'form': form})
+    def get_form_kwargs(self):
+        kwargs = super(AddressCreateView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
 
     def post(self, request, *args, **kwargs):
-        form = AddressCreateForm(request.POST)
+        form = AddressForm(request.POST, request=request)
         if form.is_valid():
+            if not request.user.is_superuser:
+                user = request.user
+            else:
+                user = form.cleaned_data['user']
             new_address = Address.objects.create(
                 zip_code=form.cleaned_data['zip_code'],
                 home_address=form.cleaned_data['home_address'],
                 mobile_number="09" + form.cleaned_data['mobile_number'][-9:],
                 body=form.cleaned_data['body'],
-                user=request.user,
+                user=user,
                 this_address=False,
+                city=form.cleaned_data['city'],
+                province=form.cleaned_data['province']
             )
             new_address.save()
             messages.success(self.request, "آدرس جدید اضافه شد")
             return HttpResponseRedirect(reverse("item:address"))
+        form = AddressForm()
         return render(request, self.template_name, {"form": form})
 
 
