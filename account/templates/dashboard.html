@@ -5,9 +5,9 @@
 <div class="row align-items-start">
     <div class="col-3">
         <div class="list-group">
-            {% if request.user.cprofile %}
+            {% if request.user.cprofile.image %}
                 <img src="{{ request.user.cprofile.image.url }}" class="card-img-top">
-            {% elif request.user.profile %}
+            {% elif request.user.profile.image %}
                 <img src="{{ request.user.profile.image.url }}" class="card-img-top">
             {% endif %}
             <div class="list-group-item list-group-item-action active" aria-current="true">

@@ -11,6 +11,7 @@ from django.contrib.auth import logout, get_user_model
 
 from .forms import *
 from .models import *
+from .mixins import *
 
 
 User = get_user_model()
@@ -23,7 +24,7 @@ class DashboardView(LoginRequiredMixin, View):
         return redirect('account:update', username=request.user.username, )
 
 
-class UserCreationView(CreateView):
+class UserCreationView(UserCreateLoginMixin ,CreateView):
     model = User
     template_name = 'create.html'
     form_class = UserCreateForm
@@ -37,7 +38,7 @@ class UserCreationView(CreateView):
         return reverse('account:login')
 
 
-class UserLoginView(LoginView):
+class UserLoginView(UserCreateLoginMixin, LoginView):
     template_name = 'login.html'
     form_class = UserLoginForm
 
@@ -50,25 +51,20 @@ class UserLoginView(LoginView):
         return reverse('item:list')
     
 
-class UserUpdateView(UpdateView):
+class UserUpdateView(OwnerOrSuperuserMixin, UpdateView):
     template_name = 'update.html'
     form_class = UserUpdateForm
 
     def get_object(self):
         user = get_object_or_404(User, username=self.kwargs['username'])
         return user
-    
-    def get(self, request, *args, **kwargs):
-        if request.user != self.get_object():
-            return redirect("item:list")
-        return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
         messages.add_message(self.request, messages.SUCCESS, "اکانت با موفقیت ویرایش شد.")
         return reverse('account:dashboard')
     
 
-class ProfileCreateView(CreateView):
+class ProfileCreateView(OwnerOrSuperuserMixin, CreateView):
     template_name = 'profile-create.html'
     model = Profile
     form_class = ProfileCreateForm
@@ -80,13 +76,21 @@ class ProfileCreateView(CreateView):
         kwargs = super(ProfileCreateView, self).get_form_kwargs()
         kwargs['request'] = self.request
         return kwargs
+    
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST,request.FILES, request=request)
+        if form.is_valid():
+            if request.user.is_superuser:
+                profile = Profile.objects.create(**form.cleaned_data)
+            else:
+                user = request.user
+                profile = Profile.objects.create(user=user, **form.cleaned_data)
+            profile.save()
+            messages.success(request, "پروفایل با موفقیت ثبت شد")
+            return HttpResponseRedirect(reverse("account:dashboard"))
 
-    def get_success_url(self):
-        messages.add_message(self.request, messages.SUCCESS, "پروفایل با موفقیت ثبت شد")
-        return reverse('account:dashboard')
 
-
-class ProfileUpdateView(UpdateView):
+class ProfileUpdateView(ProfileUpdateOwnerOrSuperuserMixin, UpdateView):
     model = Profile
     template_name = 'Profile-update.html'
     form_class = ProfileUpdateForm
@@ -115,7 +119,7 @@ class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
         return reverse('account:login')
 
 
-class CompanyProfileCreateView(CreateView):
+class CompanyProfileCreateView(OwnerOrSuperuserMixin, CreateView):
     template_name = 'cprofile-create.html'
     form_class = CompanyProfileForm
 
@@ -164,7 +168,7 @@ class CompanyProfileCreateView(CreateView):
         return render(request, self.template_name, {"form": form})
 
 
-class CompanyProfileUpdateView(UpdateView):
+class CompanyProfileUpdateView(ProfileUpdateOwnerOrSuperuserMixin, UpdateView):
     model = CompanyProfile
     template_name = "cprofile-update.html"
     form_class = CompanyProfileForm
