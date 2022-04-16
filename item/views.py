@@ -9,6 +9,8 @@ from django.views import View
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from account.models import CompanyProfile
+from .mixins import *
+from account.mixins import ProfileUpdateOwnerOrSuperuserMixin
 
 
 class ItemListView(ListView):
@@ -35,7 +37,7 @@ class ItemListView(ListView):
             return redirect("item:list")
 
 
-class ItemDetailView(View):
+class ItemDetailView(PublishedItemMixin, View):
     template_name = 'itemdetail.html'
 
     def get_object(self):
@@ -51,8 +53,6 @@ class ItemDetailView(View):
         return kwargs
 
     def get(self, request, *args, **kwargs):
-        if self.get_object().status == "d":
-            return redirect("item:list")
         return render(request, self.template_name, self.get_context_data())
 
     def post(self, request, *args, **kwargs):
@@ -127,7 +127,7 @@ class ItemDetailView(View):
         return render(request, self.template_name, self.get_context_data(**context))
 
 
-class ItemUpdateView(UpdateView):
+class ItemUpdateView(ItemUpdateMixin, UpdateView):
     form_class = ItemForm
     template_name = 'itemupdate.html'
     context_object_name = "item"
@@ -146,25 +146,15 @@ class ItemUpdateView(UpdateView):
         return reverse("account:dashboard")
 
 
-class ItemCreateView(CreateView):
+class ItemCreateView(LoginRequiredMixin, ItemCreateMixin, CreateView):
     template_name = 'itemcreate.html'
     form_class = ItemForm
+    login_url = "/login/"
 
     def get_form_kwargs(self):
         kwargs = super(ItemCreateView, self).get_form_kwargs()
         kwargs['request'] = self.request
         return kwargs
-
-    # def get(self, request, *args, **kwargs):
-    #     if not request.user.is_superuser:
-    #         try:
-    #             cprofile = CompanyProfile.objects.get(user=request.user)
-    #         except CompanyProfile.DoesNotExist:
-    #             return redirect("item:list")
-    #         else:
-    #             if not cprofile.confirm:
-    #                 return redirect("item:list")
-    #     return render(request, self.template_name, self.get_context_data())
 
     def post(self, request, *args, **kwargs):
         form = ItemForm(request.POST, request=request)
@@ -208,7 +198,7 @@ class ItemCreateView(CreateView):
 
 class AddressView(LoginRequiredMixin, View):
     template_name = "addresslist.html"
-    login_url = "/account/login/"
+    login_url = "/login/"
 
     def get_object(self):
         addresses = Address.objects.filter(user=self.request.user)
@@ -255,10 +245,10 @@ class AddressView(LoginRequiredMixin, View):
         return render(request, self.template_name, self.get_context_data(**context))
 
 
-class AddressUpdateView(LoginRequiredMixin, UpdateView):
+class AddressUpdateView(LoginRequiredMixin, ProfileUpdateOwnerOrSuperuserMixin, UpdateView):
     template_name = "addressupdate.html"
     form_class = AddressForm
-    login_url = "/account/login/"
+    login_url = "/login/"
     model = Address
 
     def get_form_kwargs(self):
@@ -314,7 +304,7 @@ class AddressCreateView(LoginRequiredMixin, CreateView):
 
 class BasketView(LoginRequiredMixin, View):
     template_name = "basket.html"
-    login_url = "/account/login/"
+    login_url = "/login/"
 
     def get_object(self):
         order = Order.objects.get(user=self.request.user)
@@ -363,16 +353,10 @@ class BasketView(LoginRequiredMixin, View):
         return HttpResponseRedirect(reverse("item:basket"))
 
 
-class MyItemListView(LoginRequiredMixin, ListView):
+class MyItemListView(LoginRequiredMixin, MyItemMixin, ListView):
     template_name = "my_item.html"
     context_object_name = "items"
 
     def get_queryset(self):
         items = Item.objects.filter(company=self.request.user).order_by("status")
         return items
-
-    def get(self, request, *args, **kwargs):
-        if not self.get_queryset().exists():
-            messages.info(request, "محصولی وجود ندارد")
-            return redirect("account:dashboard")
-        return super().get(request, *args, **kwargs)
