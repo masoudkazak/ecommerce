@@ -16,25 +16,25 @@
             <a href="{% url 'account:update' request.user.username %}" class="list-group-item list-group-item-action">ویرایش حساب</a>
             <a href="{% url 'account:passwordchange' %}" class="list-group-item list-group-item-action">تغییر رمز عبور</a>
             {% if request.user.profile %}
-                <a href="{% url 'account:profileupdate' request.user.username %}" class="list-group-item list-group-item-action">ویرایش پروفایل</a>
-                <a href="{% url 'account:companyprofilecreate' request.user.username %}" class="list-group-item list-group-item-action">ساخت پروفایل شرکتی</a>
+                <a href="{% url 'account:profile-update' request.user.username %}" class="list-group-item list-group-item-action">ویرایش پروفایل</a>
+                <a href="{% url 'account:companyprofile-create' request.user.username %}" class="list-group-item list-group-item-action">ساخت پروفایل شرکتی</a>
             {% elif request.user.cprofile and request.user.cprofile.confirm == True %}
-                <a href="{% url 'account:companyprofileupdate' request.user.username %}" class="list-group-item list-group-item-action">ويرايش پروفایل</a>
+                <a href="{% url 'account:companyprofile-update' request.user.username %}" class="list-group-item list-group-item-action">ويرايش پروفایل</a>
                 <a href="{% url 'item:create' %}" class="list-group-item list-group-item-action">افزودن محصول</a>
                 <a href="{% url 'item:myitem' %}" class="list-group-item list-group-item-action">محصولات من</a>
             {% elif request.user.cprofile and request.user.cprofile.confirm == False %}
-                <a href="{% url 'account:companyprofileupdate' request.user.username %}" class="list-group-item list-group-item-action">ويرايش پروفایل</a>
+                <a href="{% url 'account:companyprofile-update' request.user.username %}" class="list-group-item list-group-item-action">ويرايش پروفایل</a>
             {% else %}
-                <a href="{% url 'account:profilecreate' request.user.username %}" class="list-group-item list-group-item-action">تکمیل پروفایل</a>
-                <a href="{% url 'account:companyprofilecreate' request.user.username %}" class="list-group-item list-group-item-action">ساخت حساب شرکتی</a>
+                <a href="{% url 'account:profile-create' request.user.username %}" class="list-group-item list-group-item-action">تکمیل پروفایل</a>
+                <a href="{% url 'account:companyprofile-create' request.user.username %}" class="list-group-item list-group-item-action">ساخت حساب شرکتی</a>
             {% endif %}
             {% if request.user.customer.items.all %}
-                <a href="{% url 'item:basket' %}" class="list-group-item list-group-item-action">سبد خرید</a>
+                <a href="{% url 'item:basket' request.user.username %}" class="list-group-item list-group-item-action">سبد خرید</a>
             {% endif %}
             {% if request.user.address_user.all %}
                 <a href="{% url 'item:address' %}" class="list-group-item list-group-item-action">آدرس</a>
             {% endif %}
-                <a href="{% url 'item:addresscreate' %}" class="list-group-item list-group-item-action">افزودن آدرس</a>
+                <a href="{% url 'item:address-create' %}" class="list-group-item list-group-item-action">افزودن آدرس</a>
                 <a href="{% url 'account:logout' %}" class="list-group-item list-group-item-danger link-danger">خروج از حساب</a>
         </div><br>
     </div>

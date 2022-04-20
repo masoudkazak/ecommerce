@@ -11,7 +11,7 @@ from django.contrib import messages
 from account.models import CompanyProfile
 from .mixins import *
 from account.mixins import ProfileUpdateOwnerOrSuperuserMixin
-
+import slugify
 
 class ItemListView(ListView):
     template_name = 'home.html'
@@ -41,7 +41,7 @@ class ItemDetailView(PublishedItemMixin, View):
     template_name = 'itemdetail.html'
 
     def get_object(self):
-        item = get_object_or_404(Item, name=self.kwargs['name'], pk=self.kwargs['pk'])
+        item = get_object_or_404(Item, slug=self.kwargs['slug'], pk=self.kwargs['pk'])
         return item
 
     def get_context_data(self, **kwargs):
@@ -67,7 +67,7 @@ class ItemDetailView(PublishedItemMixin, View):
                 new_comment = Comment(text=text, item=item, user=user)
                 new_comment.save()
                 messages.success(request, "کامت شما ثبت شد")
-                return redirect('item:detail', pk=item.pk, name=item.name)
+                return redirect('item:detail', pk=item.pk, slug=item.slug)
             else:
                 context['response_form'] = CommentForm
 
@@ -78,13 +78,13 @@ class ItemDetailView(PublishedItemMixin, View):
                 count = orderitem_form.cleaned_data['count']
                 if count == 0:
                     messages.error(request, "هیچ تعداد محصولی انتخاب نکرده اید")
-                    return redirect('item:detail', pk=item.pk, name=item.name)
+                    return redirect('item:detail', pk=item.pk, slug=item.slug)
                 elif count > item.inventory:
                     messages.info(request, "بیش از حد ظرفیت موجود")
-                    return redirect('item:detail', pk=item.pk, name=item.name)
+                    return redirect('item:detail', pk=item.pk, slug=item.slug)
                 elif request.user == item.company:
                     messages.error(request, "این محصول شماست نمیتوانید به سبد خود ارسال کنید")
-                    return redirect("item:detail", pk=item.pk, name=item.name)
+                    return redirect("item:detail", pk=item.pk, slug=item.slug)
 
                 try:
                     update_orderitem = OrderItem.objects.get(item=item)
@@ -108,7 +108,7 @@ class ItemDetailView(PublishedItemMixin, View):
                 else:
                     update_order.items.add(OrderItem.objects.get(item=item))
                 messages.success(request, "به سبد اضافه شد")
-                return HttpResponseRedirect(reverse('item:detail', args=[item.name, item.id, ]))
+                return HttpResponseRedirect(reverse('item:detail', args=[item.slug, item.id, ]))
             else:
                 context['response_form'] = CommentForm
 
@@ -123,7 +123,7 @@ class ItemDetailView(PublishedItemMixin, View):
             item.inventory = 0
             item.save()
             messages.success(request, "محصول ناموجود شد")
-            return HttpResponseRedirect(reverse("item:detail", args=[item.name, item.id, ]))
+            return HttpResponseRedirect(reverse("item:detail", args=[item.slug, item.id, ]))
         return render(request, self.template_name, self.get_context_data(**context))
 
 
@@ -133,7 +133,7 @@ class ItemUpdateView(ItemUpdateMixin, UpdateView):
     context_object_name = "item"
 
     def get_object(self):
-        item = get_object_or_404(Item, name=self.kwargs['name'], pk=self.kwargs['pk'])
+        item = get_object_or_404(Item, slug=self.kwargs['slug'], pk=self.kwargs['pk'])
         return item
 
     def get_form_kwargs(self):
@@ -196,7 +196,7 @@ class ItemCreateView(LoginRequiredMixin, ItemCreateMixin, CreateView):
         return render(request, self.template_name, {'form': form})
 
 
-class AddressView(LoginRequiredMixin, View):
+class AddressView(LoginRequiredMixin,AddressListMixin, View):
     template_name = "addresslist.html"
     login_url = "/login/"
 
@@ -213,15 +213,12 @@ class AddressView(LoginRequiredMixin, View):
                     address.this_address = False
                     address.save()
         return addresses
-
+ 
     def get_context_data(self, **kwargs):
         kwargs['addresses'] = self.get_object()
         return kwargs
 
     def get(self, request, *args, **kwargs):
-        if not self.get_object().exists():
-            messages.info(request, "شما آدرسی نساخته اید")
-            return redirect('item:addresscreate')
         return render(request, self.template_name, self.get_context_data())
 
     def post(self, request, *args, **kwargs):
@@ -272,6 +269,7 @@ class AddressCreateView(LoginRequiredMixin, CreateView):
     form_class = AddressForm
     template_name = "addresscreate.html"
     model = Address
+    login_url = "/login/"
 
     def get_form_kwargs(self):
         kwargs = super(AddressCreateView, self).get_form_kwargs()
@@ -302,13 +300,12 @@ class AddressCreateView(LoginRequiredMixin, CreateView):
         return render(request, self.template_name, {"form": form})
 
 
-class BasketView(LoginRequiredMixin, View):
+class BasketView(LoginRequiredMixin, BasketMixin, View):
     template_name = "basket.html"
     login_url = "/login/"
-
+    
     def get_object(self):
-        order = Order.objects.get(user=self.request.user)
-        return order
+        return get_object_or_404(Order, user__username=self.kwargs['username'])
 
     def get_context_data(self, **kwargs):
         kwargs['order'] = self.get_object()
@@ -316,23 +313,6 @@ class BasketView(LoginRequiredMixin, View):
         return kwargs
 
     def get(self, request, *args, **kwargs):
-        try:
-            self.get_object()
-        except Order.DoesNotExist:
-            messages.info(request, "سبد شما خالی است")
-            return redirect('account:dashboard')
-
-        if not self.get_object().items.all().exists():
-            messages.info(request, "سبد شما خالی است")
-            return redirect('account:dashboard')
-        try:
-            self.get_context_data()['active_address']
-        except Address.DoesNotExist:
-            if not Address.objects.filter(user=request.user).exists():
-                messages.info(request, "آدرسی نساخته اید")
-                return redirect("item:addresscreate")
-            messages.info(request, "آدرسی انتخاب نکرده اید")
-            return redirect("item:address")
         return render(request, self.template_name, self.get_context_data())
 
     def post(self, request, *args, **kwargs):

@@ -1,3 +1,4 @@
+from re import T
 from django.db import models
 from taggit.managers import TaggableManager
 from django.core.validators import RegexValidator
@@ -5,6 +6,7 @@ from ckeditor.fields import RichTextField
 from django_jalali.db import models as jmodels
 from .managers import ItemManager
 from django.contrib.auth import get_user_model
+import slugify
 
 User = get_user_model()
 
@@ -63,6 +65,7 @@ class Item(models.Model):
     color = models.ManyToManyField(ColorItem, verbose_name="رنگ ها")
     discount = models.FloatField(blank=True, null=True, verbose_name="درصد تخفیف")
     status = models.CharField(choices=ITEM_STATUS, default="d", max_length=10, verbose_name="وضعيت")
+    slug = models.SlugField(null=True, blank=True)
 
     objects = ItemManager()
 
@@ -81,6 +84,11 @@ class Item(models.Model):
         if self.discount:
             dc = int(self.discount)
             return dc
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify.slugify(self.name)
+        return super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.name} - {self.category}" 

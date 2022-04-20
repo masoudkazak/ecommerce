@@ -5,7 +5,7 @@ from .models import *
 
 @admin.register(Item)
 class Admin(admin.ModelAdmin):
-    list_display = ("name", "company", "price", "updated", "category", "status")
+    list_display = ("name", "company", "price", "updated", "category", "status", "slug")
     list_filter = ("category", "company")
     ordering = ["updated"]
     search_fields = ["name", "company__username"]

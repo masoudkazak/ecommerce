@@ -7,7 +7,7 @@
     {% for item in qs %}
     <div class="col">
       <div class="card h-100">
-        <a href="{% url 'item:detail' item.name item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top"></a>
+        <a href="{% url 'item:detail' item.slug item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top"></a>
           <h4>{{ item.name }}</h4>
           <h6>{{ item.category }}</h6>
           <p>{{ item.body|safe }}</p>

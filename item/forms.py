@@ -12,7 +12,7 @@ class ItemForm(forms.ModelForm):
 
     class Meta:
         model = Item
-        exclude = ['images', 'date']
+        exclude = ['images', 'date', 'slug']
         widgets = {'name': forms.TextInput(attrs={"class": "form-control"}),
                    'category': forms.Select(attrs={"class": "form-control"}),
                    'company': forms.Select(attrs={"class": "form-control"}),

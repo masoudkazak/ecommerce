@@ -11,7 +11,7 @@
           <table class="table table-striped">
             <tbody>
               <tr>
-                <th scope="row"><a href="{% url 'item:detail' orderitem.item.name orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" height="50px"></a></th>
+                <th scope="row"><a href="{% url 'item:detail' orderitem.item.slug orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" height="50px"></a></th>
                 <td>{{ orderitem.item.name }}</td>
                 <td>{{ orderitem.item.final_price }} تومان</td>
                 <td>
@@ -34,7 +34,7 @@
         <div class="card-body">
           <h5 class="card-title">آدرس</h5>
           <p class="card-text">{{ active_address.home_address }}</p>
-          <a href="{% url 'item:addressupdate' active_address.pk %}" class="btn btn-primary">ویرایش آدرس</a>
+          <a href="{% url 'item:address-update' active_address.pk %}" class="btn btn-primary">ویرایش آدرس</a>
           <a href="{% url 'item:address' %}" class="btn btn-primary">انتخاب آدرس دیگر</a><br><br>
           <h5 class="card-title">قیمت کل</h5>
           <h6 class="card-title">پرداخت : {{ order.get_price }} تومان</h6><br>

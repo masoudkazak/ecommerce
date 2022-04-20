@@ -31,7 +31,7 @@ class ItemRetrieveAPIView(APIView):
     permission_classes = [IsOwnerOrSuperuserOrReadonly]
 
     def get_object(self):
-        item = get_object_or_404(Item, pk=self.kwargs['pk'], status="p")
+        item = get_object_or_404(Item,slug=self.kwargs['slug'], pk=self.kwargs['pk'], status="p")
         return item
 
     # details of item
@@ -214,12 +214,12 @@ class MyItemListView(generics.ListAPIView):
         return MyItems
 
 
-class OrderitemRetrieveDestroyAPIView(generics.DestroyAPIView):
+class OrderitemRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
     serializer_class = OrderItemDeleteSerializer
     permission_classes = [IsAuthenticated, OwnerDeleteOrderItem]
 
     def get_object(self):
-        orderitem = get_object_or_404(OrderItem, customer=self.kwargs['customer'], pk=self.kwargs['pk'])
+        orderitem = get_object_or_404(OrderItem, customer__username=self.kwargs['username'], pk=self.kwargs['pk'])
         return orderitem
         
 
@@ -233,15 +233,19 @@ class UserCreationAPIView(generics.CreateAPIView):
 
 
 class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
     serializer_class = UserRetrieveUpdateSerializer
     permission_classes = [IsAuthenticated, OwnerUser]
 
+    def get_object(self):
+        return get_object_or_404(User, username=self.kwargs['username'])
+
 
 class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
-    queryset = Profile.objects.all()
     serializer_class = ProfileCreationSerializer
     permission_classes = [IsAuthenticated, ProfileUpdatePermission]
+
+    def get_object(self):
+        return get_object_or_404(Profile, user__username=self.kwargs['username'])
 
 
 class UserChangePasswordAPIView(generics.UpdateAPIView):
@@ -283,10 +287,12 @@ class CompanyProfileCreateAPIView(generics.CreateAPIView):
 
 
 class CompanyProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
-    queryset = CompanyProfile.objects.all()
     serializer_class = CompanyProfileCreateSerializer
     permission_classes = [IsAuthenticated, CompanyProfileUpdatePermission]
 
     def perform_update(self, serializer):
         serializer.validated_data['home_phone_number'] = "0" + serializer.validated_data['home_phone_number'][-10:]
         return super().perform_update(serializer)
+    
+    def get_object(self):
+        return get_object_or_404(CompanyProfile, user__username=self.kwargs['username'])

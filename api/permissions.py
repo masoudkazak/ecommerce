@@ -48,10 +48,6 @@ class NotAuthenticated(permissions.BasePermission):
 
 class ProfileUpdatePermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        try:
-            Profile.objects.get(user=request.user)
-        except Profile.DoesNotExist:
-            return False
         if obj.user == request.user:
             return True
         return False

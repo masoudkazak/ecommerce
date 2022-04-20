@@ -8,7 +8,7 @@
     {% for item in items %}
     <div class="col">
       <div class="card h-100">
-        <a href="{% url 'item:update' item.name item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top"></a>
+        <a href="{% url 'item:update' item.slug item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top"></a>
           <h5>{{ item.name }}</h5>
           {% if item.status == "p" %}
           <h6>منشتر شده</h6>
