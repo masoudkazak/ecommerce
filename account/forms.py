@@ -134,4 +134,5 @@ class CompanyProfileForm(forms.ModelForm):
                    'user': forms.Select(attrs={"class": "form-select"}),
                    "image": forms.FileInput(attrs={"class": "form-control"}),
                    "home_phone_number": forms.TextInput(attrs={"class": "form-control"}),
+                   "name": forms.TextInput(attrs={"class": "form-control"}),
                    "address_company": forms.Textarea(attrs={"class": "form-control"}),}

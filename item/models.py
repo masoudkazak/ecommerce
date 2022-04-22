@@ -80,6 +80,9 @@ class Item(models.Model):
             return d_price
         return self.price
     
+    def price_without_discount(self):
+        return self.price
+    
     def int_discount(self):
         if self.discount:
             dc = int(self.discount)

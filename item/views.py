@@ -1,17 +1,15 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import *
 from django.views.generic import *
 from .forms import *
 from django.urls import reverse
-from django.shortcuts import redirect
 from django.views import View
 from django.http import HttpResponseRedirect
 from django.contrib import messages
-from account.models import CompanyProfile
 from .mixins import *
 from account.mixins import ProfileUpdateOwnerOrSuperuserMixin
-import slugify
+
 
 class ItemListView(ListView):
     template_name = 'home.html'
@@ -46,6 +44,8 @@ class ItemDetailView(PublishedItemMixin, View):
 
     def get_context_data(self, **kwargs):
         kwargs['item'] = self.get_object()
+        company_name = CompanyProfile.objects.get(user=self.get_object().company).name
+        kwargs['company_name'] = company_name
         if 'orderitem_form' not in kwargs:
             kwargs['orderitem_form'] = OrderItemForm()
         if 'comment_form' not in kwargs:

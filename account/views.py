@@ -150,6 +150,7 @@ class CompanyProfileCreateView(OwnerOrSuperuserMixin, CreateView):
                 new_profile = CompanyProfile.objects.create(user=user,
                                                             image=form.cleaned_data['image'],
                                                             bio=form.cleaned_data['bio'],
+                                                            name=form.cleaned_data['name'],
                                                             address_company=form.cleaned_data['address_company'],
                                                             home_phone_number=home_phone_number,
                                                             confirm=confirm)

@@ -22,8 +22,9 @@
         </form>
     </li>
     {% endif %}
-</ul>
-{% endif %}<br>
+</ul><br><br>
+{% endif %}
+<div class="shadow-lg p-3 mb-5 bg-body rounded">
 <div class="row row-cols-1 row-cols-md-3 g-4">
     <div class="col">
         <div class="card h-100" style="border-width:0">
@@ -42,11 +43,11 @@
                 {% for image in item.images.all %}
                     {% if forloop.counter == 1 %}
                         <div class="carousel-item active">
-                            <img src="{{ image.image.url }}" class="d-block w-100">
+                            <img src="{{ image.image.url }}" class="d-block w-100" width="405.33">
                         </div>
                     {% else %}
                         <div class="carousel-item">
-                            <img src="{{ image.image.url }}" class="d-block w-100">
+                            <img src="{{ image.image.url }}" class="d-block w-100" width="405.33">
                         </div>
                     {% endif %}
                 {% endfor %}
@@ -65,69 +66,87 @@
     <div class="col">
         <div class="card h-100" style="border-width:0">
             <div class="card-body">
-                <h5 class="card-title">{{ item.name }}</h5>
+                <h2 class="card-title">{{ item.name }}</h2><hr>
                 <h6 class="card-category">{{ item.category }}</h6>
-                <p class="card-text">{{ item.body|safe }}</p>
+                <p class="card-text">{{ item.body|safe|truncatechars:180 }}</p>
               </div>
-            {% if item.inventory == 0 %}
-                <h1>ناموجود</h1><br>
-            {% else %}
-                {% if item.discount %}
-                    <h1 style="color:red;">{{ item.int_discount }}%</h1>      
-                {% endif %}
-                <h2>{{ item.final_price }} تومان</h2>
-            <p>موحودی: {{ item.inventory }}<p><br>
-            {% endif %}
-            {% for color in item.color.all %}
-                <h2>{{ color }}</h2>
-            {% endfor %}
         </div>
     </div>
-    <div class="col">
+    <div class="col" style="text-align:center;">
         <div class="card h-100" style="border-width:0">
-
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">فروشنده</h5><br>
+                    <p>نام شرکت : {{ company_name}}</p>
+                    <p>موجودی : {{ item.inventory }}</p>
+                    <div class="col">
+                        <p>رنگ ها : {% for color in item.color.all %}
+                            <span class="dot" style="background-color: {{ color }};"></span>
+                        {% endfor %}</p>
+                    </div>
+                    {% if item.inventory == 0 %}
+                        <hr>
+                        <h4 class="text-muted" id="namujud">ناموجود</h4>    
+                    {% else %}
+                        {% if item.discount %}
+                            <p>قیمت : <s>{{ item.price_without_discount }}</s></p>
+                            <p>تخفیف : {{ item.int_discount }}%</p>      
+                        {% endif %}
+                        <p>قیمت نهایی : {{ item.final_price }} تومان<p>
+                        <button class="btn btn-success" id="buy-card">خرید</button>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
+</div><hr>
+<div class="accordion" id="accordionExample">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingOne">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          مشحصات
+        </button>
+      </h2>
+      <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+            {{ item.body|safe }}
+        </div>
+      </div>
 </div>
-<p>
-    {{ item.body|safe }}
-</p>
-<small class="text-muted">
-    {% for tag in item.tags.all %}
-       {{ tag }}#
+<div style="padding-right:16px;"><br>
+    <h3>دیدگاه ها</h3>
+    {% for comment in item.comments.all %}
+        {{ comment.user }}<br>
+        {{ comment.date|date:"Y-m-d / H:i" }}<br>
+        {{ comment.text|safe }}<br><hr>
+    {% empty %}
+        <p>هيچ ديدگاهي وجود ندارد</p>
     {% endfor %}
-</small>
-<hr>
-{% for comment in item.comments.all %}
-    {{ comment.user }}<br>
-    {{ comment.date|date:"Y-m-d / H:i" }}<br>
-    {{ comment.text|safe }}<br><hr>
-{% empty %}
-    <p>هيچ ديدگاهي وجود ندارد</p>
-{% endfor %}
 
-{% if request.user.is_authenticated %}
+    {% if request.user.is_authenticated %}
+        <form method="post">
+            {% csrf_token %}
+            {{ comment_form.media }}
+            {{ comment_form.as_p }}
+            <input type="submit" value="كامنت" name="comment" class="btn btn-primary">
+        </form>
+    {% else %}
+        برای افزودن دیدگاه ابتدا <a href="{% url 'account:login' %}">وارد</a> شوید.
+    {% endif %}
+    <hr>
+
+    {% if request.user.is_authenticated %}
     <form method="post">
         {% csrf_token %}
-        {{ comment_form.media }}
-        {{ comment_form.as_p }}
-        <input type="submit" value="كامنت" name="comment" class="btn btn-primary">
-    </form>
-{% else %}
-    برای افزودن دیدگاه ابتدا <a href="{% url 'account:login' %}">وارد</a> شوید.
-{% endif %}
-<hr>
-
-{% if request.user.is_authenticated %}
-<form method="post">
-    {% csrf_token %}
-    {{ orderitem_form.as_p }}
-    <input type="submit" value="افزودن به سبد" name="orderitem" class="btn btn-success">
-</form><br>
-{% else %}
-<form method="post">
-    {% csrf_token %}
-    <a href="{% url 'account:login' %}"><button type="button" class="btn btn-success">افزودن به سبد</button></a>
-</form><br>
-{% endif %}
+        {{ orderitem_form.as_p }}
+        <input type="submit" value="افزودن به سبد" name="orderitem" class="btn btn-success">
+    </form><br>
+    {% else %}
+    <form method="post">
+        {% csrf_token %}
+        <a href="{% url 'account:login' %}"><button type="button" class="btn btn-success">افزودن به سبد</button></a>
+    </form><br>
+    {% endif %}
+</div>
+</div>
 {% endblock %}

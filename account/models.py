@@ -41,6 +41,7 @@ class Profile(models.Model):
 
 class CompanyProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cprofile', verbose_name="شرکت")
+    name = models.CharField(max_length=250, default=None)
     image = models.ImageField(upload_to='Cprofile/%Y/%m/%d/', blank=True, null=True, verbose_name="عکس پروفال")
     home_phone_number = models.CharField(max_length=13, validators=[REGEX_HOME_PHONE_NUMBER], default=None, unique=True,
                                          verbose_name="شماره تلفن شرکت")
