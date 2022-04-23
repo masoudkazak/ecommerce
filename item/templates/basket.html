@@ -34,7 +34,7 @@
         <div class="card-body">
           <h5 class="card-title">آدرس</h5>
           <p class="card-text">{{ active_address.home_address }}</p>
-          <a href="{% url 'item:address-update' active_address.pk %}" class="btn btn-primary">ویرایش آدرس</a>
+          <a href="{% url 'item:address-update' active_address.pk %}" class="btn btn-primary basket">ویرایش آدرس</a>
           <a href="{% url 'item:address' %}" class="btn btn-primary">انتخاب آدرس دیگر</a><br><br>
           <h5 class="card-title">قیمت کل</h5>
           <h6 class="card-title">پرداخت : {{ order.get_price }} تومان</h6><br>

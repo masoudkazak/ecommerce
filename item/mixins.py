@@ -1,3 +1,4 @@
+import re
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.contrib import messages
@@ -79,4 +80,12 @@ class BasketMixin:
                 return redirect("item:address")
 
             return super().dispatch(request, *args, **kwargs)
-    
+
+
+class ItemListCategoryMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().items.exists():
+            return super().dispatch(request, *args, **kwargs)
+        messages.info(request, "محصولی وجود ندارد")
+        return redirect("item:list")
+

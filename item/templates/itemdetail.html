@@ -89,10 +89,10 @@
                         <h4 class="text-muted" id="namujud">ناموجود</h4>    
                     {% else %}
                         {% if item.discount %}
-                            <p>قیمت : <s>{{ item.price_without_discount }}</s></p>
+                            <p>قیمت : <s style="color:red;">{{ item.price_without_discount }}</s></p>
                             <p>تخفیف : {{ item.int_discount }}%</p>      
                         {% endif %}
-                        <p>قیمت نهایی : {{ item.final_price }} تومان<p>
+                        <p>قیمت نهایی : <strong style="color:green;">{{ item.final_price }} تومان</strong></p>
                         <button class="btn btn-success" id="buy-card">خرید</button>
                     {% endif %}
                 </div>
@@ -114,10 +114,18 @@
       </div>
 </div>
 <div style="padding-right:16px;"><br>
-    <h3>دیدگاه ها</h3>
+    <h3>دیدگاه ها</h3><br>
     {% for comment in item.comments.all %}
-        {{ comment.user }}<br>
-        {{ comment.date|date:"Y-m-d / H:i" }}<br>
+        {% if comment.user.first_name %}
+            {% if comment.user == item.company %}
+                <h5 style="color:red;">فروشنده</h5>
+            {% else %}
+                <h5>{{ comment.user.first_name }}</h5><br>
+            {% endif %}
+        {% else %}
+            کاربر{{ comment.user.pk }}<br>
+        {% endif %}
+        <small class="text-muted">{{ comment.date|date:"Y-m-d / H:i" }}</small><br>
         {{ comment.text|safe }}<br><hr>
     {% empty %}
         <p>هيچ ديدگاهي وجود ندارد</p>

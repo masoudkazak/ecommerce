@@ -18,3 +18,7 @@
 .card {
   margin-right: auto;
 }
+
+#id_count {
+  width: 25%;
+}

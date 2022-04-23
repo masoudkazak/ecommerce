@@ -1,23 +1,18 @@
-{% extends 'dashboard.html' %}
+{% extends 'base.html' %}
 
-{% block dtitle %}محصولات من{% endblock dtitle %}
+{% block title %}{{ category }}{% endblock title %}
 
-{% block dcontent %}
-<div class="col">
-<br><div class="row row-cols-1 row-cols-md-3 g-4">
-    {% for item in items %}
+{% block content %}
+<div class="row row-cols-1 row-cols-md-4 g-4">
+    {% for item in category.items.all %}
     <div class="col">
       <div class="card h-100">
-        <a href="{% url 'item:update' item.slug item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top" width="250" height="250"></a>
+        <a href="{% url 'item:detail' item.slug item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top" width="250" height="250"></a>
           <h5>{{ item.name }}</h5>
-          {% if item.status == "p" %}
-          <h6>منشتر شده</h6>
-          {% else %}
-          <h6>پیش نویس</h6>
-          {% endif %}
+          <h6>{{ item.category }}</h6>
         <div class="card-footer">
           <div class="price">
-          {% if item.inventory == 0 %}
+            {% if item.inventory == 0 %}
             <h5 class="text-muted" style="text-align:center;">نا موجود</h5>
             {% else %}
               {% if item.discount %}
@@ -31,6 +26,5 @@
       </div>
     </div>
     {% endfor %}
-  </div><br><br>
 </div>
 {% endblock %}

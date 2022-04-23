@@ -14,4 +14,5 @@ urlpatterns = [
     path("address/create/", AddressCreateView.as_view(), name="address-create"),
     path("<str:username>/basket/", BasketView.as_view(), name="basket"),
     path("myitem/", MyItemListView.as_view(), name="myitem"),
+    path("item/category/<str:name>/", ItemListCategoryView.as_view(), name="itemscategory"),
 ]

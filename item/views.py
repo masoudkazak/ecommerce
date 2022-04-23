@@ -22,6 +22,7 @@ class ItemListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["items"] = self.get_queryset()
+        context["categories"] = Category.objects.all()
         context['search_form'] = ItemSearchForm()
         return context
 
@@ -340,3 +341,12 @@ class MyItemListView(LoginRequiredMixin, MyItemMixin, ListView):
     def get_queryset(self):
         items = Item.objects.filter(company=self.request.user).order_by("status")
         return items
+
+
+class ItemListCategoryView(ItemListCategoryMixin, DetailView):
+    template_name = "items-category.html"
+    context_object_name = "category"
+
+    def get_object(self):
+        category = get_object_or_404(Category, name=self.kwargs['name'])
+        return category
