@@ -27,14 +27,15 @@ class ItemForm(forms.ModelForm):
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
-        fields = ['text']
+        fields = ['text', 'point']
+        widget = {"text": forms.Textarea(attrs={"class":"input"}),}
 
 
 class OrderItemForm(forms.ModelForm):
     class Meta:
         model = OrderItem
-        fields = ['count']
-        widgets = {'count': forms.NumberInput(attrs={"class": "form-control"})}
+        fields = ['count', "color"]
+        widgets = {'color': forms.Select(attrs={"class": "input-select"})}
 
 
 class AddressForm(forms.ModelForm):
@@ -70,4 +71,10 @@ class AddressSelectForm(forms.ModelForm):
 
 
 class ItemSearchForm(forms.Form):
-    lookup = forms.CharField(max_length=250, label="")
+    lookup = forms.CharField(max_length=250, label="",widget=forms.TextInput(attrs={"class": "input", "placeholder":"جستجو"}))
+
+
+class AddbasketListForm(forms.ModelForm):
+    class Meta:
+        model = OrderItem
+        exclude = "__all__"

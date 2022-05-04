@@ -1,4 +1,6 @@
-from re import T
+from itertools import count
+import re
+from unittest import result
 from django.db import models
 from taggit.managers import TaggableManager
 from django.core.validators import RegexValidator
@@ -7,6 +9,7 @@ from django_jalali.db import models as jmodels
 from .managers import ItemManager
 from django.contrib.auth import get_user_model
 import slugify
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 User = get_user_model()
 
@@ -57,6 +60,7 @@ class Item(models.Model):
     company = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="فروشنده")
     price = models.BigIntegerField(verbose_name="قیمت")
     body = RichTextField(verbose_name="نوضیحات")
+    description = RichTextField(verbose_name="معرفی",blank=True)
     images = models.ManyToManyField(Uploadimage, blank=True, verbose_name="عکس ها")
     date = jmodels.jDateTimeField(auto_now_add=True, verbose_name="تاریخ")
     updated = jmodels.jDateTimeField(auto_now=True, verbose_name="تاریخ آخرین تغییر")
@@ -100,14 +104,42 @@ class Item(models.Model):
 class Comment(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='comments', verbose_name="محصول")
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="کاربر")
-    text = RichTextField(verbose_name="متن")
+    text = models.TextField(verbose_name="متن")
+    point = models.IntegerField(null=True, blank=True,
+        validators=[MaxValueValidator(5), MinValueValidator(0)])
     date = jmodels.jDateTimeField(auto_now_add=True, verbose_name="تاریخ")
 
     class Meta:
         ordering = ['-date']
         verbose_name_plural = "نظرها"
         verbose_name = "کامنت"
-    
+
+    def dict_point_users(self, item):
+        comments_item = Comment.objects.filter(item=item)
+        users = []
+        count = 0
+        number = [0, 0, 0, 0, 0, 0]
+        if comments_item.exists():
+            for comment in comments_item:
+                users.append(comment.user.username)
+            dict_point_user = dict.fromkeys(users)
+            users = list(dict.fromkeys(users))
+            for user in users:
+                mycomment = Comment.objects.filter(user__username=user, item=item).order_by("-date")
+                for c in mycomment:
+                    if c.point:
+                        count += c.point
+                        dict_point_user[user] = c.point
+                        break
+                if dict_point_user[user] == None:
+                    dict_point_user[user] = 0
+                number[dict_point_user[user]] += 1
+            dict_point_user['average'] = int(count / len(users))
+            dict_point_user['number'] = number
+            print(dict_point_user)
+            return dict_point_user
+        return {'average': 0, 'number': [0, 0, 0, 0, 0, 0]}
+
     def __str__(self):
         return f"{self.item} - {self.user}"
 
@@ -115,6 +147,7 @@ class Comment(models.Model):
 class OrderItem(models.Model):
     customer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="مشتری")
     item = models.ForeignKey(Item, on_delete=models.CASCADE, verbose_name="محصول")
+    color = models.CharField(max_length=250, null=True, blank=True)
     count = models.PositiveIntegerField(default=1, verbose_name="تعداد")
 
     def get_price(self):

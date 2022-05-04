@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
+{% load item_tags %}
 {% block title %}{{ item.name }}{% endblock %}
 
 {% block content %}
 <br>
 {% if request.user.is_authenticated and request.user == item.company or request.user.is_superuser %}
-<ul class="nav nav-pills">
+<ul class="nav nav-pills" style="padding-left: 43%;">
     <li class="nav-item">
         <form method="post">
             {% csrf_token %}
@@ -24,137 +25,298 @@
     {% endif %}
 </ul><br><br>
 {% endif %}
-<div class="shadow-lg p-3 mb-5 bg-body rounded">
-<div class="row row-cols-1 row-cols-md-3 g-4">
-    <div class="col">
-        <div class="card h-100" style="border-width:0">
-            <div id="carouselExampleDark" class="carousel carousel-dark slide" data-bs-ride="carousel">
-                <div class="carousel-indicators">
-                
-                {% for image in item.images.all %}
-                    {% if forloop.counter0 == 0 %}
-                        <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>    
-                    {% else %}
-                        <button type="button" data-bs-target="#carouselExampleDark" data-bs-slide-to="{{ forloop.counter0 }}" aria-label="Slide {{ forloop.counter0 }}"></button>
-                    {% endif %}
-                {% endfor %}
-                </div>
-                <div class="carousel-inner">
-                {% for image in item.images.all %}
-                    {% if forloop.counter == 1 %}
-                        <div class="carousel-item active">
-                            <img src="{{ image.image.url }}" class="d-block w-100" width="405.33">
-                        </div>
-                    {% else %}
-                        <div class="carousel-item">
-                            <img src="{{ image.image.url }}" class="d-block w-100" width="405.33">
-                        </div>
-                    {% endif %}
-                {% endfor %}
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleDark" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">قبلی</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleDark" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">بعدی</span>
-                </button>
-            </div>
-        </div>
-    </div>
-    <div class="col">
-        <div class="card h-100" style="border-width:0">
-            <div class="card-body">
-                <h2 class="card-title">{{ item.name }}</h2><hr>
-                <h6 class="card-category">{{ item.category }}</h6>
-                <p class="card-text">{{ item.body|safe|truncatechars:180 }}</p>
-              </div>
-        </div>
-    </div>
-    <div class="col" style="text-align:center;">
-        <div class="card h-100" style="border-width:0">
-            <div class="card" style="width: 18rem;">
-                <div class="card-body">
-                    <h5 class="card-title">فروشنده</h5><br>
-                    <p>نام شرکت : {{ company_name}}</p>
-                    <p>موجودی : {{ item.inventory }}</p>
-                    <div class="col">
-                        <p>رنگ ها : {% for color in item.color.all %}
-                            <span class="dot" style="background-color: {{ color }};"></span>
-                        {% endfor %}</p>
-                    </div>
-                    {% if item.inventory == 0 %}
-                        <hr>
-                        <h4 class="text-muted" id="namujud">ناموجود</h4>    
-                    {% else %}
-                        {% if item.discount %}
-                            <p>قیمت : <s style="color:red;">{{ item.price_without_discount }}</s></p>
-                            <p>تخفیف : {{ item.int_discount }}%</p>      
-                        {% endif %}
-                        <p>قیمت نهایی : <strong style="color:green;">{{ item.final_price }} تومان</strong></p>
-                        <button class="btn btn-success" id="buy-card">خرید</button>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div><hr>
-<div class="accordion" id="accordionExample">
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="headingOne">
-        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-          مشحصات
-        </button>
-      </h2>
-      <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-        <div class="accordion-body">
-            {{ item.body|safe }}
-        </div>
-      </div>
-</div>
-<div style="padding-right:16px;"><br>
-    <h3>دیدگاه ها</h3><br>
-    {% for comment in item.comments.all %}
-        {% if comment.user.first_name %}
-            {% if comment.user == item.company %}
-                <h5 style="color:red;">فروشنده</h5>
-            {% else %}
-                <h5>{{ comment.user.first_name }}</h5><br>
-            {% endif %}
-        {% else %}
-            کاربر{{ comment.user.pk }}<br>
-        {% endif %}
-        <small class="text-muted">{{ comment.date|date:"Y-m-d / H:i" }}</small><br>
-        {{ comment.text|safe }}<br><hr>
-    {% empty %}
-        <p>هيچ ديدگاهي وجود ندارد</p>
-    {% endfor %}
+		<!-- SECTION -->
+		<div class="section">
+			<!-- container -->
+			<div class="container">
+				<!-- row -->
+				<div class="row">
+					<!-- Product main img -->
+					<div class="col-md-5 col-md-push-2">
+						<div id="product-main-img">
+							{% for image in item.images.all %}
+							<div class="product-preview">
+                                <img src="{{ image.image.url }}" alt="">
+							</div>
+							{% endfor %}
+						</div>
+					</div>
+					<!-- /Product main img -->
 
-    {% if request.user.is_authenticated %}
-        <form method="post">
-            {% csrf_token %}
-            {{ comment_form.media }}
-            {{ comment_form.as_p }}
-            <input type="submit" value="كامنت" name="comment" class="btn btn-primary">
-        </form>
-    {% else %}
-        برای افزودن دیدگاه ابتدا <a href="{% url 'account:login' %}">وارد</a> شوید.
-    {% endif %}
-    <hr>
+					<!-- Product thumb imgs -->
+					<div class="col-md-2  col-md-pull-5">
+						<div id="product-imgs">
+                            {% for image in item.images.all %}
+							<div class="product-preview">
+								<img src="{{ image.image.url }}" alt="">
+							</div>
+                            {% endfor %}
+						</div>
+					</div>
+					<!-- /Product thumb imgs -->
 
-    {% if request.user.is_authenticated %}
-    <form method="post">
-        {% csrf_token %}
-        {{ orderitem_form.as_p }}
-        <input type="submit" value="افزودن به سبد" name="orderitem" class="btn btn-success">
-    </form><br>
-    {% else %}
-    <form method="post">
-        {% csrf_token %}
-        <a href="{% url 'account:login' %}"><button type="button" class="btn btn-success">افزودن به سبد</button></a>
-    </form><br>
-    {% endif %}
-</div>
-</div>
-{% endblock %}
+					<!-- Product details -->
+					<div class="col-md-5">
+						<div class="product-details">
+							<h2 class="product-name">{{ item.name }}</h2>
+							<div>
+								<div class="product-rating">
+									{% for i in dict_point_users|get_value_dict:"average"|number_to_range_point|get_index_list:0 %}
+									<i class="fa fa-star"></i>
+									{% endfor %}
+									{% for i in dict_point_users|get_value_dict:"average"|number_to_range_point|get_index_list:1 %}
+									<i class="fa fa-star-o"></i>
+									{% endfor %}
+								</div>
+								<a class="review-link" data-toggle="tab" href="#tab3">{{ item.comments.all|length }} Review(s) | Add your review</a>
+							</div>
+							<div>
+								{% if item.discount %}
+									<h3 class="product-price">{{ item.final_price }} تومان<del class="product-old-price">{{ item.price_without_discount }} تومان</del></h3>
+								{% else %}
+									<h3 class="product-price">$980.00 <del class="product-old-price">{{ item.final_price }} تومان</del></h3>
+								{% endif %}
+								<span class="product-available">In Stock</span>
+							</div>
+							<p>{{ item.description|safe }}</p>
+							<form method="post">
+								{% csrf_token %}
+								<div class="product-options">
+									<label>
+										رنگ ها
+										<select class="input-select" name="color">
+											{% for color in item.color.all %}
+												<option value="{{ color }}">{{ color }}</option>
+											{% endfor %} 
+										</select>
+									</label>
+								</div>
+
+								<div class="add-to-cart">
+									<div class="qty-label">
+										تعداد
+										<div class="input-number">
+											{{ orderitem_form.count }}
+											<span class="qty-up">+</span>
+											<span class="qty-down">-</span>
+										</div>
+									</div>
+									<button class="add-to-cart-btn" name='orderitem'><i class="fa fa-shopping-cart"></i>افزودن به سبد</button>
+								</div>
+							</form>
+							<ul class="product-btns">
+								<li><a href="#"><i class="fa fa-heart-o"></i> add to wishlist</a></li>
+							</ul>
+
+							<ul class="product-links">
+								<li>دسته بندی:</li>
+								<li><a href="{% url 'item:itemscategory' item.category.name %}">{{ item.category }}</a></li>
+							</ul>
+
+							<ul class="product-links">
+								<li>Share:</li>
+								<li><a href="#"><i class="fa fa-facebook"></i></a></li>
+								<li><a href="#"><i class="fa fa-twitter"></i></a></li>
+								<li><a href="#"><i class="fa fa-google-plus"></i></a></li>
+								<li><a href="#"><i class="fa fa-envelope"></i></a></li>
+							</ul>
+
+						</div>
+					</div>
+					<!-- /Product details -->
+
+					<!-- Product tab -->
+					<div class="col-md-12">
+						<div id="product-tab">
+							<!-- product tab nav -->
+							<ul class="tab-nav">
+								<li class="active"><a data-toggle="tab" href="#tab1">معرفی</a></li>
+								<li><a data-toggle="tab" href="#tab2">جزییات</a></li>
+								<li><a data-toggle="tab" href="#tab3">دیدگاه({{ item.comments.all|length }})</a></li>
+							</ul>
+							<!-- /product tab nav -->
+
+							<!-- product tab content -->
+							<div class="tab-content">
+								<!-- tab1  -->
+								<div id="tab1" class="tab-pane fade in active">
+									<div class="row">
+										<div class="col-md-12">
+											<p>{{ item.description|safe }}</p>
+										</div>
+									</div>
+								</div>
+								<!-- /tab1  -->
+
+								<!-- tab2  -->
+								<div id="tab2" class="tab-pane fade in">
+									<div class="row">
+										<div class="col-md-12">
+											<p>{{ item.body|safe }}</p>
+										</div>
+									</div>
+								</div>
+								<!-- /tab2  -->
+
+								<!-- tab3  -->
+								<div id="tab3" class="tab-pane fade in">
+									<div class="row">
+										<!-- Rating -->
+										<div class="col-md-3">
+											<div id="rating">
+												<div class="rating-avg">
+													<span>{{ dict_point_users|get_value_dict:"average" }}</span>
+													<div class="rating-stars">
+														{% for i in dict_point_users|get_value_dict:"average"|number_to_range_point|get_index_list:0 %}
+														<i class="fa fa-star"></i>
+														{% endfor %}
+														{% for i in dict_point_users|get_value_dict:"average"|number_to_range_point|get_index_list:1 %}
+														<i class="fa fa-star-o"></i>
+														{% endfor %}
+													</div>
+												</div>
+												<ul class="rating">
+													{% for number in dict_point_users|get_value_dict:"number" %}
+													<li>
+														<div class="rating-stars">
+															{% for i in forloop.counter0|number_to_range_point|get_index_list:0 %}
+																<i class="fa fa-star"></i>
+															{% endfor %}
+															{% for i in forloop.counter0|number_to_range_point|get_index_list:1 %}
+																<i class="fa fa-star-o"></i>
+															{% endfor %}
+														</div>
+														<span class="sum">{{ number }}</span>
+													</li>
+													{% endfor %}
+												</ul>
+											</div>
+										</div>
+										<!-- /Rating -->
+
+										<!-- Reviews -->
+										<div class="col-md-6">
+											<div id="reviews">
+												<ul class="reviews">
+													{% for comment in item.comments.all %}
+													<li>
+														<div class="review-heading">
+															{% if comment.user.first_name %}
+																{% if comment.user == item.company %}
+																	<h5 class="name">فروشنده</h5>
+																{% else %}
+																	<h5 class="name">{{ comment.user.first_name }}</h5>
+																{% endif %}
+															{% else %}
+																کاربر{{ comment.user.pk }}
+															{% endif %}
+															
+															<p class="date">{{ comment.date|date:"Y-m-d / H:i" }}</p>
+															<div class="review-rating">
+																{% for i in dict_point_users|get_value_dict:comment.user.username|number_to_range_point|get_index_list:0 %}
+																<i class="fa fa-star"></i>
+																{% endfor %}
+																{% for i in dict_point_users|get_value_dict:comment.user.username|number_to_range_point|get_index_list:1 %}
+																<i class="fa fa-star-o empty"></i>
+																{% endfor %}
+															</div>
+														</div>
+														<div class="review-body">
+															<p>{{ comment.text|safe }}</p>
+														</div>
+													</li>
+													{% empty %}
+														دیدگاهی وجود ندارد
+													{% endfor %}
+												</ul>
+											</div>
+										</div>
+										<!-- /Reviews -->
+
+										<!-- Review Form -->
+										{% if request.user.is_authenticated %}
+										<div class="col-md-3">
+											<div id="review-form">
+												<form class="review-form" method="post">
+													{% csrf_token %}
+													{{ comment_form.text }}
+													<div class="input-rating">
+														<spanامتیاز شما: </span>
+														<div class="stars">
+															<input id="star5" name="rating" value="5" type="radio"><label for="star5"></label>
+															<input id="star4" name="rating" value="4" type="radio"><label for="star4"></label>
+															<input id="star3" name="rating" value="3" type="radio"><label for="star3"></label>
+															<input id="star2" name="rating" value="2" type="radio"><label for="star2"></label>
+															<input id="star1" name="rating" value="1" type="radio"><label for="star1"></label>
+														</div>
+													</div>
+													<button class="primary-btn" name="comment">Submit</button>
+												</form>
+											</div>
+										</div>
+										<!-- /Review Form -->
+										{% endif %}
+									</div>
+								</div>
+								<!-- /tab3  -->
+							</div>
+							<!-- /product tab content  -->
+						</div>
+					</div>
+					<!-- /product tab -->
+				</div>
+				<!-- /row -->
+			</div>
+			<!-- /container -->
+		</div>
+		<!-- /SECTION -->
+		{% if same_items|length != 0 %}
+		<!-- Section -->
+		<div class="section">
+			<!-- container -->
+			<div class="container">
+				<!-- row -->
+				<div class="row">
+					<div class="col-md-12">
+						<div class="section-title text-center">
+							<h3 class="title">محصولات مشابه</h3>
+						</div>
+					</div>
+					{% for item in same_items %}
+					<!-- product -->
+					<div class="col-md-3 col-xs-6">
+						<div class="product">
+							<div class="product-img">
+								<img src="{{ item.images.all.0.image.url }}" alt="" width="262.5px" height="262.5px">
+								{% if item.discount %}
+								<div class="product-label">
+									<span class="sale">-30%</span>
+								</div>
+								{% endif %}
+							</div>
+							<div class="product-body">
+								<p class="product-category">{{ item.category }}</p>
+								<h3 class="product-name"><a href="{% url 'item:detail' item.slug item.pk %}">{{ item.name }}</a></h3>
+								{% if item.discount %}
+									<h4 class="product-price">{{ item.final_price }} <del class="product-old-price">{{ item.price_without_discount }}</del></h4>
+								{% else %}
+									<h4 class="product-price">{{ item.final_price }}</h4>
+								{% endif %}
+								<div class="product-rating">
+								</div>
+								<div class="product-btns">
+									<button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- /product -->
+					{% endfor %}
+				</div>
+				<!-- /row -->
+			</div>
+			<!-- /container -->
+		</div>
+		<!-- /Section -->
+		{% endif %}
+{% endblock content %}

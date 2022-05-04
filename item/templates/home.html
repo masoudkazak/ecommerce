@@ -2,65 +2,321 @@
 
 {% block title %}Home{% endblock title %}
 
-{% block search %}
-<form method="post" class="d-flex">
-  {% csrf_token %}
-  {{ search_form }}
-  <input class="btn btn-outline-success" type="submit" value="جستجو" name="search">
-</form>
-{% endblock %}
-
-{% block content %}
-<div class="col-md-4">
-  <select class="form-select" id="itemcategory" aria-label="Default select example" onchange="location = this.value;">
+{% block category %}
+<form method="post">
+  <select class="input-select" onchange="location = this.value;">
     <option selected value="{% url 'item:list' %}">همه</option>
     {% for category in categories %}
       {% if category.items.all|length != 0 %}
-        <option value="{% url 'item:itemscategory' category.name %}">{{ category.name }}</option></a>
+        <option value="{% url 'item:itemscategory' category.name %}">{{ category.name }}</option>
       {% endif %}
     {% endfor %}
   </select>
-  </div> 
-<br>
-<div class="row row-cols-1 row-cols-md-4 g-4">
-    {% for item in items %}
-    <div class="col">
-      <div class="card h-100">
-        <a href="{% url 'item:detail' item.slug item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top" width="250" height="250"></a>
-          <h5>{{ item.name }}</h5>
-          <h6>{{ item.category }}</h6>
-        <div class="card-footer">
-          <div class="price">
-            {% if item.inventory == 0 %}
-            <h5 class="text-muted" style="text-align:center;">نا موجود</h5>
-            {% else %}
-              {% if item.discount %}
-                  <h5 style="color:green;"><s style="color:red;">{{ item.price_without_discount }}</s> {{ item.final_price }} تومان</h5>
-              {% else %}
-                <h5>{{ item.final_price }} تومان</h5>
-              {% endif %}
-            {% endif %}
+  {% block search %}
+  {% csrf_token %}
+  {{ search_form }}
+  <button class="search-btn" name="search">جستجو</button>
+{% endblock %}
+</form>
+{% endblock %}
+
+{% block num_basket %}
+  {{ num_basket }}
+{% endblock %}
+
+{% block content %}
+<!-- SECTION -->
+<div class="section">
+  <!-- container -->
+  <div class="container">
+    <!-- row -->
+    <div class="row">
+      <!-- ASIDE -->
+      <div id="aside" class="col-md-3">
+        <!-- aside Widget -->
+        <div class="aside">
+          <h3 class="aside-title">Categories</h3>
+          <div class="checkbox-filter">
+
+            <div class="input-checkbox">
+              <input type="checkbox" id="category-1">
+              <label for="category-1">
+                <span></span>
+                Laptops
+                <small>(120)</small>
+              </label>
+            </div>
+
+            <div class="input-checkbox">
+              <input type="checkbox" id="category-2">
+              <label for="category-2">
+                <span></span>
+                Smartphones
+                <small>(740)</small>
+              </label>
+            </div>
+
+            <div class="input-checkbox">
+              <input type="checkbox" id="category-3">
+              <label for="category-3">
+                <span></span>
+                Cameras
+                <small>(1450)</small>
+              </label>
+            </div>
+
+            <div class="input-checkbox">
+              <input type="checkbox" id="category-4">
+              <label for="category-4">
+                <span></span>
+                Accessories
+                <small>(578)</small>
+              </label>
+            </div>
+
+            <div class="input-checkbox">
+              <input type="checkbox" id="category-5">
+              <label for="category-5">
+                <span></span>
+                Laptops
+                <small>(120)</small>
+              </label>
+            </div>
+
+            <div class="input-checkbox">
+              <input type="checkbox" id="category-6">
+              <label for="category-6">
+                <span></span>
+                Smartphones
+                <small>(740)</small>
+              </label>
+            </div>
           </div>
         </div>
+        <!-- /aside Widget -->
+
+        <!-- aside Widget -->
+        <div class="aside">
+          <h3 class="aside-title">Price</h3>
+          <div class="price-filter">
+            <div id="price-slider"></div>
+            <div class="input-number price-min">
+              <input id="price-min" type="number">
+              <span class="qty-up">+</span>
+              <span class="qty-down">-</span>
+            </div>
+            <span>-</span>
+            <div class="input-number price-max">
+              <input id="price-max" type="number">
+              <span class="qty-up">+</span>
+              <span class="qty-down">-</span>
+            </div>
+          </div>
+        </div>
+        <!-- /aside Widget -->
+
+        <!-- aside Widget -->
+        <div class="aside">
+          <h3 class="aside-title">Brand</h3>
+          <div class="checkbox-filter">
+            <div class="input-checkbox">
+              <input type="checkbox" id="brand-1">
+              <label for="brand-1">
+                <span></span>
+                SAMSUNG
+                <small>(578)</small>
+              </label>
+            </div>
+            <div class="input-checkbox">
+              <input type="checkbox" id="brand-2">
+              <label for="brand-2">
+                <span></span>
+                LG
+                <small>(125)</small>
+              </label>
+            </div>
+            <div class="input-checkbox">
+              <input type="checkbox" id="brand-3">
+              <label for="brand-3">
+                <span></span>
+                SONY
+                <small>(755)</small>
+              </label>
+            </div>
+            <div class="input-checkbox">
+              <input type="checkbox" id="brand-4">
+              <label for="brand-4">
+                <span></span>
+                SAMSUNG
+                <small>(578)</small>
+              </label>
+            </div>
+            <div class="input-checkbox">
+              <input type="checkbox" id="brand-5">
+              <label for="brand-5">
+                <span></span>
+                LG
+                <small>(125)</small>
+              </label>
+            </div>
+            <div class="input-checkbox">
+              <input type="checkbox" id="brand-6">
+              <label for="brand-6">
+                <span></span>
+                SONY
+                <small>(755)</small>
+              </label>
+            </div>
+          </div>
+        </div>
+        <!-- /aside Widget -->
+
+        <!-- aside Widget -->
+        <div class="aside">
+          <h3 class="aside-title">Top selling</h3>
+          <div class="product-widget">
+            <div class="product-img">
+              <img src="./img/product01.png" alt="">
+            </div>
+            <div class="product-body">
+              <p class="product-category">Category</p>
+              <h3 class="product-name"><a href="#">product name goes here</a></h3>
+              <h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
+            </div>
+          </div>
+
+          <div class="product-widget">
+            <div class="product-img">
+              <img src="./img/product02.png" alt="">
+            </div>
+            <div class="product-body">
+              <p class="product-category">Category</p>
+              <h3 class="product-name"><a href="#">product name goes here</a></h3>
+              <h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
+            </div>
+          </div>
+
+          <div class="product-widget">
+            <div class="product-img">
+              <img src="./img/product03.png" alt="">
+            </div>
+            <div class="product-body">
+              <p class="product-category">Category</p>
+              <h3 class="product-name"><a href="#">product name goes here</a></h3>
+              <h4 class="product-price">$980.00 <del class="product-old-price">$990.00</del></h4>
+            </div>
+          </div>
+        </div>
+        <!-- /aside Widget -->
       </div>
-    </div>
-    {% endfor %}
-  </div><br><br>
-  {% if items|length != 0 %}
-<nav aria-label="Page navigation example">
-    <ul class="pagination">
-      {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">قبلی</a></li>
-      {% endif %}
+      <!-- /ASIDE -->
 
-      {% for n in page_obj.paginator.page_range %}
-        <li class="page-item"><a class="page-link" href="?page={{ n }}">{{ n }}</a></li>
-      {% endfor %}
+      <!-- STORE -->
+      <div id="store" class="col-md-9">
+        <!-- store top filter -->
+        <div class="store-filter clearfix">
+          <div class="store-sort">
+            <label>
+              Sort By:
+              <select class="input-select">
+                <option value="0">Popular</option>
+                <option value="1">Position</option>
+              </select>
+            </label>
 
-      {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">بعدی</a></li>
-      {% endif %}
-    </ul>
-  </nav>
-  {% endif %}
+            <label>
+              Show:
+              <select class="input-select">
+                <option value="0">20</option>
+                <option value="1">50</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <!-- /store top filter -->
+
+        <!-- store products -->
+        <div class="row">
+          <!-- product -->
+          {% for item in items %}
+          <div class="col-md-4 col-xs-6">
+            <div class="product">
+              <div class="product-img">
+                <img src="{{ item.images.all.0.image.url }}" alt="" width="262.5px" height="262.5px">
+                <div class="product-label">
+                  {% if item.inventory != 0 %}
+                    {% if item.discount %}
+                      <span class="sale">-{{ item.int_discount }}</span>
+                    {% endif %}
+                  {% endif %}
+                  {% if forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 %}
+                  <span class="new">NEW</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="product-body">
+                <p class="product-category">{{ item.category }}</p>
+                <h3 class="product-name"><a href="{% url 'item:detail' item.slug item.pk %}">{{ item.name }}</a></h3>
+                {% if item.inventory == 0 %}
+                  <h4 class="product-price">تمام</h4>
+                  <h4 class="product-price">شد</h4>
+                {% else %}
+                  {% if item.discount %}
+                    <h4 class="product-price">{{ item.final_price }} <del class="product-old-price">{{ item.price_without_discount }}</del></h4>
+                    <h4 class="product-price">تومان</h4>
+                   {% else %}
+                    <h4 class="product-price">{{ item.final_price }}</h4>
+                    <h4 class="product-price">تومان</h4>
+                  {% endif %}
+                {% endif %}
+                <div class="product-rating">
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                </div>
+                <div class="product-btns">
+                  <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span></button>
+                </div>
+              </div>
+              {% if item.inventory != 0 %}
+              <div class="add-to-cart">
+                <form method="post">
+                  {% csrf_token %}
+                <button class="add-to-cart-btn" name="{{ item }}"><i class="fa fa-shopping-cart"></i> افزودن به سبد</button>
+              </form>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+          <!-- /product -->
+          <!-- store bottom filter -->
+						<div class="store-filter clearfix">
+							<ul class="store-pagination">
+                {% if page_obj.has_previous %}
+                  <li><a href="?page={{ page_obj.previous_page_number }}"><i class="fa fa-angle-left"></i></a></li>
+                {% endif %}
+                {% for n in page_obj.paginator.page_range %}
+                  {% if page_obj.number == n %}
+                    <li class="active">{{ n }}</li>
+                  {% else %}
+                    <li><a href="?page={{ n }}">{{ n }}</a></li>
+                  {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+								  <li><a href="?page={{ page_obj.next_page_number }}"><i class="fa fa-angle-right"></i></a></li>
+                {% endif %}
+              </ul>
+						</div>
+						<!-- /store bottom filter -->
+					</div>
+					<!-- /STORE -->
+				</div>
+				<!-- /row -->
+			</div>
+			<!-- /container -->
+		</div>
+		<!-- /SECTION -->
 {% endblock content %}

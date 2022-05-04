@@ -14,7 +14,7 @@ class Admin(admin.ModelAdmin):
                  (None, {"fields": ("company",)}),
                  (None, {"fields": (("price", "inventory"),)}),
                  (None, {"fields": (("images", "color"),)}),
-                 (None, {"fields": ("body",)}),
+                 (None, {"fields": ("body", "description")}),
                  (None, {"fields": ("tags",)}),
                  (None, {"fields": ("discount",)}),
                  (None, {"fields": ("status",)}),)
@@ -29,7 +29,7 @@ class Admin(admin.ModelAdmin):
 class Admin(admin.ModelAdmin):
     list_display = ("user", "item", "date",)
     search_fields = ["user__username", "item", "text", ]
-    ordering = ['date']
+    ordering = ['-date']
 
 
 admin.site.register(Category)
@@ -37,7 +37,7 @@ admin.site.register(Category)
 
 @admin.register(OrderItem)
 class Admin(admin.ModelAdmin):
-    list_display = ("customer", "item", "count",)
+    list_display = ("customer", "item", "count", "color")
     search_fields = ["customer__username", "item__name", ]
     ordering = ['customer']
 

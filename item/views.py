@@ -1,5 +1,8 @@
+from cgitb import text
+from re import I
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
+from requests import request
 from .models import *
 from django.views.generic import *
 from .forms import *
@@ -9,31 +12,76 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from .mixins import *
 from account.mixins import ProfileUpdateOwnerOrSuperuserMixin
+from django.db.models import Q
 
 
 class ItemListView(ListView):
     template_name = 'home.html'
-    paginate_by = 8
+    paginate_by = 3
+    queryset = Item.objects.filter(status="p")
 
-    def get_queryset(self):
-        queryset = Item.objects.filter(status="p")
-        return queryset
+    def get_basket(self):
+        if self.request.user.is_authenticated:
+            try:
+                order = Order.objects.get(user=self.request.user)
+            except Order.DoesNotExist:
+                return 0
+            if order.items.all().exists():
+                num_orders = order.items.all().count()
+                return num_orders
+            return 0
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["items"] = self.get_queryset()
+        context["items"] = self.queryset
         context["categories"] = Category.objects.all()
         context['search_form'] = ItemSearchForm()
+        context['num_basket'] = self.get_basket()
+        context['addbasketlist_form'] = AddbasketListForm()
         return context
 
     def post(self, request, *args, **kwargs):
+        self.object_list = self.queryset
+        context = {}
         if "search" in request.POST:
             search_form = ItemSearchForm(request.POST)
             if search_form.is_valid():
                 qs = Item.objects.search(query=search_form.cleaned_data['lookup']).filter(status="p")
                 ctxt = {"qs": qs}
                 return render(request, "itemsearch.html", context=ctxt)
-            return redirect("item:list")
+            else:
+                context["search_form"] = search_form
+        
+        for item in self.object_list.filter(~Q(inventory=0)):    
+            if str(item) in request.POST:
+                if request.user == item.company:
+                    messages.error(request, "این محصول شماست نمیتوانید به سبد خود ارسال کنید")
+                    return redirect("item:list")
+
+                try:
+                    update_orderitem = OrderItem.objects.get(item=item, customer=request.user)
+                except OrderItem.DoesNotExist:
+                    new_orderitem = OrderItem.objects.create(item=item,
+                                                                count=1,
+                                                                customer=request.user)
+                    new_orderitem.save()
+                else:
+                    update_orderitem.count += 1
+                    update_orderitem.save()
+
+                try:
+                    update_order = Order.objects.get(user=request.user)
+                except Order.DoesNotExist:
+                    new_order = Order(
+                        user=request.user,
+                    )
+                    new_order.save()
+                    new_order.items.add(OrderItem.objects.get(item=item, customer=request.user))
+                else:
+                    update_order.items.add(OrderItem.objects.get(item=item, customer=request.user))
+                messages.success(request, "به سبد اضافه شد")
+                return HttpResponseRedirect(reverse('item:list'))
+        return render(request, self.template_name, self.get_context_data(**context))
 
 
 class ItemDetailView(PublishedItemMixin, View):
@@ -47,10 +95,15 @@ class ItemDetailView(PublishedItemMixin, View):
         kwargs['item'] = self.get_object()
         company_name = CompanyProfile.objects.get(user=self.get_object().company).name
         kwargs['company_name'] = company_name
+        same_items = []
+        for tag in self.get_object().tags.all():
+            same_items += Item.objects.filter(tags=tag).filter(~Q(name=self.get_object().name))
+        kwargs["same_items"] = same_items
         if 'orderitem_form' not in kwargs:
             kwargs['orderitem_form'] = OrderItemForm()
         if 'comment_form' not in kwargs:
             kwargs['comment_form'] = CommentForm()
+        kwargs['dict_point_users'] = Comment.dict_point_users(self, self.get_object())
         return kwargs
 
     def get(self, request, *args, **kwargs):
@@ -58,14 +111,18 @@ class ItemDetailView(PublishedItemMixin, View):
 
     def post(self, request, *args, **kwargs):
         context = {}
+        print(request.POST)
         if 'comment' in request.POST:
             comment_form = CommentForm(request.POST)
-
             if comment_form.is_valid():
                 text = comment_form.cleaned_data['text']
+                if 'rating' in request.POST:
+                    point = int(request.POST['rating'])
+                else:
+                    point = None
                 item = self.get_object()
                 user = request.user
-                new_comment = Comment(text=text, item=item, user=user)
+                new_comment = Comment(item=item, user=user, text=text, point=point)
                 new_comment.save()
                 messages.success(request, "کامت شما ثبت شد")
                 return redirect('item:detail', pk=item.pk, slug=item.slug)
@@ -73,6 +130,7 @@ class ItemDetailView(PublishedItemMixin, View):
                 context['response_form'] = CommentForm
 
         elif 'orderitem' in request.POST:
+            print(request.POST)
             orderitem_form = OrderItemForm(request.POST)
             item = self.get_object()
             if orderitem_form.is_valid():
@@ -88,10 +146,11 @@ class ItemDetailView(PublishedItemMixin, View):
                     return redirect("item:detail", pk=item.pk, slug=item.slug)
 
                 try:
-                    update_orderitem = OrderItem.objects.get(item=item)
+                    update_orderitem = OrderItem.objects.get(item=item, customer=request.user, color=orderitem_form.cleaned_data['color'])
                 except OrderItem.DoesNotExist:
                     new_orderitem = OrderItem.objects.create(item=item,
                                                              count=count,
+                                                             color=request.POST['color'],
                                                              customer=request.user)
                     new_orderitem.save()
                 else:
@@ -323,15 +382,15 @@ class BasketView(LoginRequiredMixin, BasketMixin, View):
             if delete in request.POST:
                 item.delete()
                 messages.success(request, "محصول مورد نظر حذف گردید")
-                return HttpResponseRedirect(reverse("item:basket"))
+                return HttpResponseRedirect(reverse("item:basket", args=[request.user.username]))
             x = int(request.POST[str(item.id)])
             if x > item.item.inventory:
                 messages.error(request, "بیش از حد ظرفیت موجود")
-                return redirect("item:basket")
+                return redirect("item:basket", username=request.user.username)
             item.count = x
             item.save()
         messages.success(request, "تغییرات انجام شد")
-        return HttpResponseRedirect(reverse("item:basket"))
+        return HttpResponseRedirect(reverse("item:basket", args=[request.user.username]))
 
 
 class MyItemListView(LoginRequiredMixin, MyItemMixin, ListView):

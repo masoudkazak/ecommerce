@@ -1,29 +1,30 @@
 {% extends 'dashboard.html' %}
 
 {% block dtitle %}سبد خرید{% endblock dtitle %}
-
+  
 {% block dcontent %}
 <div class="col">
     <form method="POST">
         {% csrf_token %}
         {% for orderitem in order.items.all %}
-        <div class="col">
-          <table class="table table-striped">
-            <tbody>
-              <tr>
-                <th scope="row"><a href="{% url 'item:detail' orderitem.item.slug orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" height="50px"></a></th>
-                <td>{{ orderitem.item.name }}</td>
-                <td>{{ orderitem.item.final_price }} تومان</td>
-                <td>
-                  <label for="{{ orderitem.id }}"></label>
-                  <input class="form-control" type="number" id="{{ orderitem.id }}" name="{{ orderitem.id }}" min="1" value={{ orderitem.count }}>
-                </td>
-                <td>
-                  <a href="#"><input type="submit" name="delete-{{ orderitem.id }}" value="حذف" class="btn btn-danger"></a><br>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="row">
+          <div class="col-md-1">
+            <a href="{% url 'item:detail' orderitem.item.slug orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" height="50px"></a>
+          </div>
+          <div class="col-md-4">
+            {{ orderitem.item.name }}
+          </div>
+          <div class="col-md-3" id="price-basket">
+            {{ orderitem.item.final_price }} تومان
+          </div>
+          <div class="col-md-2">
+            <label for="{{ orderitem.id }}"></label>
+            <input class="form-control" type="number" id="{{ orderitem.id }}" name="{{ orderitem.id }}" min="1" value={{ orderitem.count }}>
+          </div>
+          <div class="col-md-2" id="delete-box"> 
+            <a href="#"><input type="submit" name="delete-{{ orderitem.id }}" value="حذف" class="btn btn-danger"></a><br>
+          </div>
+        </div>
         {% endfor %}<br>
         <input type="submit" value="ثبت" class="btn btn-primary">
     </from><hr>
@@ -34,7 +35,7 @@
         <div class="card-body">
           <h5 class="card-title">آدرس</h5>
           <p class="card-text">{{ active_address.home_address }}</p>
-          <a href="{% url 'item:address-update' active_address.pk %}" class="btn btn-primary basket">ویرایش آدرس</a>
+          <a href="{% url 'item:address-update' active_address.pk %}" class="btn btn-primary">ویرایش آدرس</a>
           <a href="{% url 'item:address' %}" class="btn btn-primary">انتخاب آدرس دیگر</a><br><br>
           <h5 class="card-title">قیمت کل</h5>
           <h6 class="card-title">پرداخت : {{ order.get_price }} تومان</h6><br>
