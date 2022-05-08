@@ -36,6 +36,7 @@
         <div id="top-header">
           <div class="container">
             <ul class="header-links pull-left">
+              <li><a href="{% url 'item:list' %}"><i class="fa fa-home"></i>MasoudKazak</a></li>
               <li><a href="#"><i class="fa fa-phone"></i> +98-939-920-2913</a></li>
               <li><a href="#"><i class="fa fa-envelope-o"></i> kzmasut@gmail.com</a></li>
               <li><a href="#"><i class="fa fa-map-marker"></i>گلستان - تهران</a></li>
@@ -99,54 +100,7 @@
                     </div>
                   {% endif %}
                   <!-- /Wishlist -->
-  
-                  <!-- Cart -->
-                  <div class="dropdown">
-                    {% if request.user.is_authenticated %}
-                    <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" href="{% url 'item:basket' request.user.username %}">
-                      <i class="fa fa-shopping-cart"></i>
-                      <span>سبد خرید</span>
-                      <div class="qty">{% block num_basket %}{% endblock num_basket %}</div>
-                    </a>
-                    {% endif %}
-                    <div class="cart-dropdown">
-                      <div class="cart-list">
-                        <div class="product-widget">
-                          <div class="product-img">
-                            <img src="./img/product01.png" alt="">
-                          </div>
-                          <div class="product-body">
-                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                            <h4 class="product-price"><span class="qty">1x</span>$980.00</h4>
-                          </div>
-                          <button class="delete"><i class="fa fa-close"></i></button>
-                        </div>
-  
-                        <div class="product-widget">
-                          <div class="product-img">
-                            <img src="./img/product02.png" alt="">
-                          </div>
-                          <div class="product-body">
-                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                            <h4 class="product-price"><span class="qty">3x</span>$980.00</h4>
-                          </div>
-                          <button class="delete"><i class="fa fa-close"></i></button>
-                        </div>
-                      </div>
-                      <div class="cart-summary">
-                        <small>3 Item(s) selected</small>
-                        <h5>SUBTOTAL: $2940.00</h5>
-                      </div>
-                      {% if request.user.is_authenticated %}
-                      <div class="cart-btns">
-                        <a href="{% url 'item:basket' request.user.username %}">View Cart</a>
-                        <a href="#">Checkout  <i class="fa fa-arrow-circle-right"></i></a>
-                      </div>
-                      {% endif %}
-                    </div>
-                  </div>
-                  <!-- /Cart -->
-  
+                  {% block num_basket %}{% endblock num_basket %}
                   <!-- Menu Toogle -->
                   <div class="menu-toggle">
                     <a href="#">

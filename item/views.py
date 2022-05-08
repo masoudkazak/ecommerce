@@ -1,8 +1,5 @@
-from cgitb import text
-from re import I
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
-from requests import request
 from .models import *
 from django.views.generic import *
 from .forms import *
@@ -20,7 +17,7 @@ class ItemListView(ListView):
     paginate_by = 3
     queryset = Item.objects.filter(status="p")
 
-    def get_basket(self):
+    def get_number_basket(self):
         if self.request.user.is_authenticated:
             try:
                 order = Order.objects.get(user=self.request.user)
@@ -30,14 +27,33 @@ class ItemListView(ListView):
                 num_orders = order.items.all().count()
                 return num_orders
             return 0
+    
+    def get_items_basket(self):
+        if self.request.user.is_authenticated:
+            try:
+                myorder = Order.objects.get(user=self.request.user)
+            except Order.DoesNotExist:
+                return []
+            else:
+                return myorder.items.all()
+    
+    def get_final_price_order(self):
+        if self.request.user.is_authenticated:
+            try:
+                order = Order.objects.get(user=self.request.user)
+            except Order.DoesNotExist:
+                return 0    
+            return order.get_price    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["items"] = self.queryset
         context["categories"] = Category.objects.all()
         context['search_form'] = ItemSearchForm()
-        context['num_basket'] = self.get_basket()
+        context['num_basket'] = self.get_number_basket()
         context['addbasketlist_form'] = AddbasketListForm()
+        context['items_basket'] = self.get_items_basket()
+        context['final_price'] = self.get_final_price_order()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -104,6 +120,8 @@ class ItemDetailView(PublishedItemMixin, View):
         if 'comment_form' not in kwargs:
             kwargs['comment_form'] = CommentForm()
         kwargs['dict_point_users'] = Comment.dict_point_users(self, self.get_object())
+        if self.request.user.is_authenticated:
+            kwargs['is_there_watchlist'] = WatchList.is_there_watchlist(self, self.request.user, self.get_object())
         return kwargs
 
     def get(self, request, *args, **kwargs):
@@ -184,6 +202,19 @@ class ItemDetailView(PublishedItemMixin, View):
             item.save()
             messages.success(request, "محصول ناموجود شد")
             return HttpResponseRedirect(reverse("item:detail", args=[item.slug, item.id, ]))
+        
+        elif str(self.get_object()) + "add" in request.POST:
+            watchlist = WatchList.objects.create(user=request.user, item=self.get_object())
+            watchlist.save()
+            messages.success(request, "به علاقه مندی ها اضافه شد")
+            return HttpResponseRedirect(reverse("item:detail", args=[self.get_object().slug, self.get_object().id, ]))
+
+        elif str(self.get_object()) + "del" in request.POST:
+            watchlist = WatchList.objects.get(user=request.user, item=self.get_object())
+            watchlist.delete()
+            messages.success(request, "از علاقه مندی ها حذف شد")
+            return HttpResponseRedirect(reverse("item:detail", args=[self.get_object().slug, self.get_object().id, ]))
+
         return render(request, self.template_name, self.get_context_data(**context))
 
 

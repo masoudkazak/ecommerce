@@ -62,5 +62,12 @@ class Admin(admin.ModelAdmin):
         queryset.update(this_address=False)
 
 
+@admin.register(WatchList)
+class Admin(admin.ModelAdmin):
+    list_display = ("user", "item")
+    search_fields = ["user", "item" ]
+    ordering = ['user']
+
+
 admin.site.register(ColorItem)
 admin.site.register(Uploadimage)

@@ -71,12 +71,15 @@
 								<a class="review-link" data-toggle="tab" href="#tab3">{{ item.comments.all|length }} Review(s) | Add your review</a>
 							</div>
 							<div>
-								{% if item.discount %}
-									<h3 class="product-price">{{ item.final_price }} تومان<del class="product-old-price">{{ item.price_without_discount }} تومان</del></h3>
+								{% if item.inventory == 0 %}
+									<h3 class="product-price">ناموجود</h3>
 								{% else %}
-									<h3 class="product-price">$980.00 <del class="product-old-price">{{ item.final_price }} تومان</del></h3>
+									{% if item.discount %}
+										<h3 class="product-price">{{ item.final_price }} تومان<del class="product-old-price">{{ item.price_without_discount }} تومان</del></h3>
+									{% else %}
+										<h3 class="product-price">{{ item.final_price }} تومان</h3>
+									{% endif %}
 								{% endif %}
-								<span class="product-available">In Stock</span>
 							</div>
 							<p>{{ item.description|safe }}</p>
 							<form method="post">
@@ -104,10 +107,28 @@
 									<button class="add-to-cart-btn" name='orderitem'><i class="fa fa-shopping-cart"></i>افزودن به سبد</button>
 								</div>
 							</form>
+							{% if request.user.is_authenticated %}
+								{% if is_there_watchlist %}
+									<form method="post">
+										{% csrf_token %}
+										<div class="add-to-cart">
+											<button class="add-to-cart-btn" name="{{ item }}del"><i class="fa fa-heart"></i>حذف از علاقه مندی ها</button>
+										</div>
+									</form>
+								{% else %}
+									<form method="post">
+										{% csrf_token %}
+										<div class="add-to-cart">
+											<button class="add-to-cart-btn" name="{{ item }}add"><i class="fa fa-heart-o"></i>افزودن به علاقه مندی ها</button>
+										</div>
+									</form>
+								{% endif %}
+							{% else %}
 							<ul class="product-btns">
-								<li><a href="#"><i class="fa fa-heart-o"></i> add to wishlist</a></li>
+								<li><a href="{% url 'account:login' %}"><i class="fa fa-heart-o"></i>افزودن به علاقه مندی ها</a></li>
 							</ul>
-
+							{% endif %}
+							
 							<ul class="product-links">
 								<li>دسته بندی:</li>
 								<li><a href="{% url 'item:itemscategory' item.category.name %}">{{ item.category }}</a></li>

@@ -196,4 +196,23 @@ class Address(models.Model):
     
     def __str__(self):
         return f"{self.user} - {self.mobile_number}"
+
+
+class WatchList(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+
+    def is_there_watchlist(self, user, item):
+        try:
+            WatchList.objects.get(user=user, item=item)
+        except WatchList.DoesNotExist:
+            return False
+        return True
+    
+    class Meta:
+        verbose_name_plural = "علاقه مند ها"
+        verbose_name = "علاقه مند"
+
+    def __str__(self):
+        return f"{self.user}-{self.item.name}"
     
