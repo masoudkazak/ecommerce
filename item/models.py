@@ -209,6 +209,12 @@ class WatchList(models.Model):
             return False
         return True
     
+    def num_watchlist(self, user):
+        watchlists = WatchList.objects.filter(user=user)
+        if watchlists.exists():
+            return watchlists.count()
+        return 0
+    
     class Meta:
         verbose_name_plural = "علاقه مند ها"
         verbose_name = "علاقه مند"

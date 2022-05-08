@@ -15,4 +15,5 @@ urlpatterns = [
     path("<str:username>/basket/", BasketView.as_view(), name="basket"),
     path("myitem/", MyItemListView.as_view(), name="myitem"),
     path("item/category/<str:name>/", ItemListCategoryView.as_view(), name="itemscategory"),
+    path("watchlist/", WatchListView.as_view(), name="watchlist")
 ]

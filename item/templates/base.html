@@ -92,10 +92,10 @@
                   <!-- Wishlist -->
                   {% if request.user.is_authenticated %}
                     <div>
-                      <a href="#">
+                      <a href="{% url 'item:watchlist' %}">
                         <i class="fa fa-heart-o"></i>
                         <span>Your Wishlist</span>
-                        <div class="qty">2</div>
+                        <div class="qty">{{ num_watchlist }}</div>
                       </a>
                     </div>
                   {% endif %}

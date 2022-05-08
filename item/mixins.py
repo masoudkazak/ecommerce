@@ -89,3 +89,10 @@ class ItemListCategoryMixin:
         messages.info(request, "محصولی وجود ندارد")
         return redirect("item:list")
 
+
+class WatchListMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_queryset().exists():
+            return super().dispatch(request, *args, **kwargs)
+        messages.info(request, "محصولی وجود ندارد")
+        return redirect("item:list")

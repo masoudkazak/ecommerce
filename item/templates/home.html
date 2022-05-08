@@ -156,23 +156,6 @@
                   <i class="fa fa-star"></i>
                   <i class="fa fa-star"></i>
                 </div>
-                {% if request.user.is_authenticated %}
-								  {% if is_there_watchlist %}
-                  <form method="post">
-                    <div class="product-btns">
-                      <button class="add-to-wishlist" name="{{ item }}del"><i class="fa fa-heart-o"></i><span class="tooltipp">حذف از علاقه مندی ها</span></button>
-                    </div>
-                  </form>
-                  {% else %}
-                  <form method="post">
-                    <div class="product-btns">
-                      <button class="add-to-wishlist" name="{{ item }}add"><i class="fa fa-heart-o"></i><span class="tooltipp">افزودن به علاقه مندی ها</span></button>
-                    </div>
-                  </form>
-                  {% endif %}
-                {% else %}
-                  <a href="{% url 'account:login' %}" class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp"></span></a>
-                {% endif %}
               </div>
               {% if item.inventory != 0 %}
               <div class="add-to-cart">

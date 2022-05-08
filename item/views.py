@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
+from requests import request
 from .models import *
 from django.views.generic import *
 from .forms import *
@@ -54,6 +55,10 @@ class ItemListView(ListView):
         context['addbasketlist_form'] = AddbasketListForm()
         context['items_basket'] = self.get_items_basket()
         context['final_price'] = self.get_final_price_order()
+        if self.request.user.is_authenticated:
+            context['num_watchlist'] = WatchList.num_watchlist(self, self.request.user)
+        else:
+            context['num_watchlist'] = 0
         return context
 
     def post(self, request, *args, **kwargs):
@@ -440,3 +445,47 @@ class ItemListCategoryView(ItemListCategoryMixin, DetailView):
     def get_object(self):
         category = get_object_or_404(Category, name=self.kwargs['name'])
         return category
+
+
+class WatchListView(LoginRequiredMixin, WatchListMixin, ListView):
+    template_name = "watchlist.html"
+    context_object_name = "watchlists"
+
+    def get_queryset(self):
+        queryset = WatchList.objects.filter(user=self.request.user)
+        return queryset
+
+    def post(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        context = {}
+        for watchlist in self.object_list:
+            if watchlist.item.inventory != 0:
+                if str(watchlist.item) in request.POST:
+                    if request.user == watchlist.item.company:
+                        messages.error(request, "این محصول شماست نمیتوانید به سبد خود ارسال کنید")
+                        return redirect("item:list")
+
+                    try:
+                        update_orderitem = OrderItem.objects.get(item=watchlist.item, customer=request.user)
+                    except OrderItem.DoesNotExist:
+                        new_orderitem = OrderItem.objects.create(item=watchlist.item,
+                                                                    count=1,
+                                                                    customer=request.user)
+                        new_orderitem.save()
+                    else:
+                        update_orderitem.count += 1
+                        update_orderitem.save()
+
+                    try:
+                        update_order = Order.objects.get(user=request.user)
+                    except Order.DoesNotExist:
+                        new_order = Order(
+                            user=request.user,
+                        )
+                        new_order.save()
+                        new_order.items.add(OrderItem.objects.get(item=watchlist.item, customer=request.user))
+                    else:
+                        update_order.items.add(OrderItem.objects.get(item=watchlist.item, customer=request.user))
+                    messages.success(request, "به سبد اضافه شد")
+                    return HttpResponseRedirect(reverse('item:watchlist'))
+        return render(request, self.template_name, self.get_context_data(**context))
