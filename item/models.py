@@ -136,9 +136,14 @@ class Comment(models.Model):
                 number[dict_point_user[user]] += 1
             dict_point_user['average'] = int(count / len(users))
             dict_point_user['number'] = number
-            print(dict_point_user)
             return dict_point_user
         return {'average': 0, 'number': [0, 0, 0, 0, 0, 0]}
+    
+    def get_averages_dict(self, queryset):
+        average_dict = {}
+        for item in queryset:
+            average_dict[item.name] = Comment.dict_point_users(self, item)['average']
+        return average_dict
 
     def __str__(self):
         return f"{self.item} - {self.user}"
@@ -208,6 +213,17 @@ class WatchList(models.Model):
         except WatchList.DoesNotExist:
             return False
         return True
+    
+    def are_there_watchlist(self, queryset, user):
+        watchlist_dict = {}
+        for item in queryset:
+            try:
+                WatchList.objects.get(user=user, item=item)
+            except WatchList.DoesNotExist:
+                watchlist_dict[item.name] = False
+            else:
+                watchlist_dict[item.name] = True
+        return watchlist_dict
     
     def num_watchlist(self, user):
         watchlists = WatchList.objects.filter(user=user)

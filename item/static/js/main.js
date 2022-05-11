@@ -154,8 +154,8 @@
 			connect: true,
 			step: 1,
 			range: {
-				'min': 1,
-				'max': 999
+				'min': 100000,
+				'max': 100000000
 			}
 		});
 

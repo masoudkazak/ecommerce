@@ -15,5 +15,7 @@ urlpatterns = [
     path("<str:username>/basket/", BasketView.as_view(), name="basket"),
     path("myitem/", MyItemListView.as_view(), name="myitem"),
     path("item/category/<str:name>/", ItemListCategoryView.as_view(), name="itemscategory"),
-    path("watchlist/", WatchListView.as_view(), name="watchlist")
+    path("watchlist/", WatchListView.as_view(), name="watchlist"),
+    path("addwatchlist/", AddWatchlist.as_view(), name="addwatchlist"),
+    path("removewatchlist/", RemoveWatchlist.as_view(), name="removewatchlist"),
 ]

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load item_tags %}
 {% block title %}Home{% endblock title %}
 
 {% block category %}
@@ -68,27 +68,28 @@
     <!-- row -->
     <div class="row">
       <!-- ASIDE -->
-      <div id="aside" class="col-md-3">
+      {% comment %} <div id="aside" class="col-md-3">
         <!-- aside Widget -->
-        <div class="aside">
-          <h3 class="aside-title">Price</h3>
-          <div class="price-filter">
-            <div id="price-slider"></div>
-            <div class="input-number price-min">
-              <input id="price-min" type="number">
-              <span class="qty-up">+</span>
-              <span class="qty-down">-</span>
-            </div>
-            <span>-</span>
-            <div class="input-number price-max">
-              <input id="price-max" type="number">
-              <span class="qty-up">+</span>
-              <span class="qty-down">-</span>
+          <div class="aside">
+            <h3 class="aside-title">Price</h3>
+            <div class="price-filter">
+              <div id="price-slider"></div>
+              <div class="input-number price-min">
+                <input class="filter-price" id="price-min" type="number" data-catid="min_price">
+                <span class="qty-up">+</span>
+                <span class="qty-down">-</span>
+              </div>
+              <span>-</span>
+              <div class="input-number price-max">
+                <input class="filter-price" id="price-max" type="number" name="max_price">
+                <span class="qty-up">+</span>
+                <span class="qty-down">-</span>
+              </div>
+              <input type="submit" value="filter">
             </div>
           </div>
-        </div>
         <!-- /aside Widget -->
-      </div>
+      </div> {% endcomment %}
       <!-- /ASIDE -->
 
       <!-- STORE -->
@@ -150,11 +151,19 @@
                   {% endif %}
                 {% endif %}
                 <div class="product-rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
+                  {% for average in average_dict|get_value_dict:item.name|number_to_range_point|get_index_list:0 %}
+                    <i class="fa fa-star"></i>
+                  {% endfor %}
+                  {% for average in average_dict|get_value_dict:item.name|number_to_range_point|get_index_list:1 %}
+                    <i class="fa fa-star-o"></i>
+                  {% endfor %}
+                </div>
+                <div class="product-btns">
+                  {% if are_there_watchlist|get_value_dict:item.name %}
+                  <a class="removewatch" id="remove{{item.id}}" href="#" data-catid="{{ item.id }}"><i class="fa fa-heart"></i></a>
+                  {% else %}
+                  <a class="addwatch" id="add{{item.id}}" href="#" data-catid="{{ item.id }}"><i class="fa fa-heart-o"></i></a>
+                  {% endif %}
                 </div>
               </div>
               {% if item.inventory != 0 %}
@@ -196,4 +205,39 @@
 			<!-- /container -->
 		</div>
 		<!-- /SECTION -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script type="text/javascript">
+    $('.removewatch').click(function(){
+    var catid;
+    catid = $(this).attr("data-catid");
+    $.ajax(
+    {
+        type:"GET",
+        url: "/removewatchlist",
+        data:{
+                 item_id: catid
+        },
+        success: function( data ) 
+        {
+          location.reload()
+        }
+     })
+    });
+    $('.addwatch').click(function(){
+    var catid;
+    catid = $(this).attr("data-catid");
+    $.ajax(
+    {
+      type:"GET",
+      url: "/addwatchlist",
+      data:{
+                item_id: catid
+            },
+      success: function( data ) 
+        {
+          location.reload()
+        }
+      })
+    });
+  </script>
 {% endblock content %}

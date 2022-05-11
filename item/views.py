@@ -1,21 +1,22 @@
+from termios import VINTR
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
-from requests import request
 from .models import *
 from django.views.generic import *
 from .forms import *
 from django.urls import reverse
 from django.views import View
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from .mixins import *
 from account.mixins import ProfileUpdateOwnerOrSuperuserMixin
-from django.db.models import Q
+from django.db.models import Q, F
+from django.core.paginator import Paginator
 
 
 class ItemListView(ListView):
     template_name = 'home.html'
-    paginate_by = 3
+    paginate_by = 6
     queryset = Item.objects.filter(status="p")
 
     def get_number_basket(self):
@@ -48,7 +49,8 @@ class ItemListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["items"] = self.queryset
+        p = Paginator(self.queryset, self.paginate_by)
+        context["items"] = p.page(context['page_obj'].number)
         context["categories"] = Category.objects.all()
         context['search_form'] = ItemSearchForm()
         context['num_basket'] = self.get_number_basket()
@@ -59,11 +61,15 @@ class ItemListView(ListView):
             context['num_watchlist'] = WatchList.num_watchlist(self, self.request.user)
         else:
             context['num_watchlist'] = 0
+        context['average_dict'] = Comment.get_averages_dict(self, self.queryset)
+        if self.request.user.is_authenticated:
+            context['are_there_watchlist'] = WatchList.are_there_watchlist(self, self.queryset, self.request.user)
         return context
 
     def post(self, request, *args, **kwargs):
         self.object_list = self.queryset
         context = {}
+        print(request.POST)
         if "search" in request.POST:
             search_form = ItemSearchForm(request.POST)
             if search_form.is_valid():
@@ -72,7 +78,7 @@ class ItemListView(ListView):
                 return render(request, "itemsearch.html", context=ctxt)
             else:
                 context["search_form"] = search_form
-        
+                    
         for item in self.object_list.filter(~Q(inventory=0)):    
             if str(item) in request.POST:
                 if request.user == item.company:
@@ -489,3 +495,21 @@ class WatchListView(LoginRequiredMixin, WatchListMixin, ListView):
                     messages.success(request, "به سبد اضافه شد")
                     return HttpResponseRedirect(reverse('item:watchlist'))
         return render(request, self.template_name, self.get_context_data(**context))
+
+
+class AddWatchlist(View):
+    def get(self, request, *args, **kwargs):
+        item_id = request.GET['item_id']
+        item = Item.objects.get(id=item_id)
+        w = WatchList(item=item, user=request.user)
+        w.save()
+        return HttpResponse("Success")
+
+
+class RemoveWatchlist(View):
+    def get(self, request, *args, **kwargs):
+        item_id = request.GET['item_id']
+        item = Item.objects.get(id=item_id)
+        w = WatchList.objects.get(item=item, user=request.user)
+        w.delete()
+        return HttpResponse("Success")
