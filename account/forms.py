@@ -63,30 +63,30 @@ class UserLoginForm(AuthenticationForm):
 class UserPasswordChangeForm(PasswordChangeForm):
     new_password1 = forms.CharField(
         label=_("New password"),
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "input", 'placeholder': "رمز جدید"}),
         strip=False,
         help_text=password_validation.password_validators_help_text_html(),
     )
     new_password2 = forms.CharField(
         label=_("New password confirmation"),
         strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "input", 'placeholder': "تکرار رمز جدید"}),
     )
     old_password = forms.CharField(
         label=_("Old password"),
         strip=False,
         widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', 'autofocus': True,
-                                          "class": "form-control"}),)
+                                          "class": "input", 'placeholder': "رمز قدیمی"}),)
 
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'username', 'email')
-        widgets = {'first_name': forms.TextInput(attrs={"class": "form-control"}),
-                   'last_name': forms.TextInput(attrs={"class": "form-control"}),
-                   'username': forms.TextInput(attrs={"class": "form-control"}),
-                   'email': forms.TextInput(attrs={"class": "form-control"}), }
+        widgets = {'first_name': forms.TextInput(attrs={"class": "input", 'placeholder': "نام"}),
+                   'last_name': forms.TextInput(attrs={"class": "input", 'placeholder': "نام خانوادگی"}),
+                   'username': forms.TextInput(attrs={"class": "input", 'placeholder': "نام حساب"}),
+                   'email': forms.TextInput(attrs={"class": "input", 'placeholder': "ایمیل"}), }
 
 
 class ProfileCreateForm(forms.ModelForm):
@@ -99,9 +99,10 @@ class ProfileCreateForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = "__all__"
-        widgets = {'gender': forms.Select(attrs={"class": "form-select"}),
-                   'user': forms.Select(attrs={"class": "form-select"}),
-                   "image": forms.FileInput(attrs={"class": "form-control"})}
+        widgets = {'gender': forms.Select(attrs={"class": "input-select", 'placeholder': "جنسیت"}),
+                   'user': forms.Select(attrs={"class": "input-select", 'placeholder': "حساب"}),
+                   "image": forms.FileInput(attrs={"class": "input", 'placeholder': "عکس پروفایل"}),
+                   "bio": forms.Textarea(attrs={"class": "input", 'placeholder': "درباره من"})}
 
 
 class ProfileUpdateForm(forms.ModelForm):
@@ -114,9 +115,10 @@ class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = "__all__"
-        widgets = {'gender': forms.Select(attrs={"class": "form-select"}),
-                   'user': forms.Select(attrs={"class": "form-select"}),
-                   "image": forms.FileInput(attrs={"class": "form-control"})}
+        widgets = {'gender': forms.Select(attrs={"class": "input-select", 'placeholder': "جنسیت"}),
+                   'user': forms.Select(attrs={"class": "input-select", 'placeholder': "حساب"}),
+                   "image": forms.FileInput(attrs={"class": "input", 'placeholder': "عکس پروفایل"}),
+                   "bio": forms.Textarea(attrs={"class": "input", 'placeholder': "درباره من"})}
 
 
 class CompanyProfileForm(forms.ModelForm):
@@ -131,9 +133,9 @@ class CompanyProfileForm(forms.ModelForm):
         model = CompanyProfile
         fields = "__all__"
         widgets = {'bio': forms.Textarea(attrs={"class": "input", 'placeholder': 'درباه شرکت'}),
-                   'user': forms.Select(attrs={"class": "input", 'placeholder': 'حساب'}),
+                   'user': forms.Select(attrs={"class": "input-select", 'placeholder': 'حساب'}),
                    "home_phone_number": forms.TextInput(attrs={"class": "input", 'placeholder': 'شماره تلفن'}),
                    "name": forms.TextInput(attrs={"class": "input", 'placeholder': 'نام'}),
                    "address_company": forms.Textarea(attrs={"class": "input", 'placeholder': 'آدرس'}),
-                   "confirm": forms.CheckboxInput(attrs={'placeholder': 'تایید شرکت'}),
+                   "confirm": forms.CheckboxInput(attrs={'placeholder': 'تایید شرکت', "class":"input"}),
                    }

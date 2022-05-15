@@ -3,34 +3,45 @@
 {% block dtitle %}محصولات من{% endblock dtitle %}
 
 {% block dcontent %}
-<div class="col">
-<br><div class="row row-cols-1 row-cols-md-3 g-4">
+<div class="col-md-7">
+    <!-- product -->
     {% for item in items %}
-    <div class="col">
-      <div class="card h-100">
-        <a href="{% url 'item:update' item.slug item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top" width="250" height="250"></a>
-          <h5>{{ item.name }}</h5>
-          {% if item.status == "p" %}
-          <h6>منشتر شده</h6>
-          {% else %}
-          <h6>پیش نویس</h6>
-          {% endif %}
-        <div class="card-footer">
-          <div class="price">
-          {% if item.inventory == 0 %}
-            <h5 class="text-muted" style="text-align:center;">نا موجود</h5>
-            {% else %}
+    <div class="col-md-6 col-xs-6">
+      <div class="product">
+        <div class="product-img">
+          <a href="{% url 'item:update' item.slug item.pk %}"><img src="{{ item.images.all.0.image.url }}" alt="" width="262.5px" height="262.5px"></a>
+          <div class="product-label">
+            {% if item.inventory != 0 %}
               {% if item.discount %}
-                  <h5 style="color:green;"><s style="color:red;">{{ item.price_without_discount }}</s> {{ item.final_price }} تومان</h5>
-              {% else %}
-                <h5>{{ item.final_price }} تومان</h5>
+                <span class="sale">-{{ item.int_discount }}</span>
               {% endif %}
             {% endif %}
+            {% if item.status == "p" %}
+            <span class="new" style="background-color:green;border-color:green;">منتشر شده</span>
+            {% else %}
+            <span class="new">پیش نویس</span>
+            {% endif %}
           </div>
+        </div>
+        <div class="product-body">
+          <p class="product-category">{{ item.category }}</p>
+          <h3 class="product-name"><a href="{% url 'item:update' item.slug item.pk %}">{{ item.name }}</a></h3>
+          {% if item.inventory == 0 %}
+            <h4 class="product-price">تمام</h4>
+            <h4 class="product-price">شد</h4>
+          {% else %}
+            {% if item.discount %}
+              <h4 class="product-price">{{ item.final_price }} <del class="product-old-price">{{ item.price_without_discount }}</del></h4>
+              <h4 class="product-price">تومان</h4>
+             {% else %}
+              <h4 class="product-price">{{ item.final_price }}</h4>
+              <h4 class="product-price">تومان</h4>
+            {% endif %}
+          {% endif %}
         </div>
       </div>
     </div>
     {% endfor %}
-  </div><br><br>
+    <!-- /product -->
 </div>
 {% endblock %}

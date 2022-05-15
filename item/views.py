@@ -91,8 +91,7 @@ class ItemDetailView(PublishedItemMixin, View):
 
     def get_context_data(self, **kwargs):
         kwargs['item'] = self.get_object()
-        company_name = CompanyProfile.objects.get(user=self.get_object().company).name
-        kwargs['company_name'] = company_name
+        kwargs['company_name'] = CompanyProfile.get_name(self, self.get_object().company)
         same_items = []
         for tag in self.get_object().tags.all():
             same_items += Item.objects.filter(tags=tag).filter(~Q(name=self.get_object().name))

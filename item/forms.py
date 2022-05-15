@@ -13,29 +13,29 @@ class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
         exclude = ['images', 'date', 'slug']
-        widgets = {'name': forms.TextInput(attrs={"class": "form-control"}),
-                   'category': forms.Select(attrs={"class": "form-control"}),
-                   'company': forms.Select(attrs={"class": "form-control"}),
-                   'price': forms.NumberInput(attrs={"class": "form-control"}),
-                   'tags': forms.TextInput(attrs={"class": "form-control"}),
-                   'inventory': forms.NumberInput(attrs={"class": "form-control"}),
-                   "discount": forms.NumberInput(attrs={"class": "form-control"}),
-                   "status": forms.Select(attrs={"class": "form-control"}),
-                   'color': forms.SelectMultiple(attrs={"class": "form-control"})}
+        widgets = {'name': forms.TextInput(attrs={"class": "input", 'placeholder': "نام محصول"}),
+                   'category': forms.Select(attrs={"class": "input-select", 'placeholder': "دسته بندی"}),
+                   'company': forms.Select(attrs={"class": "input-select", 'placeholder': "شرکت"}),
+                   'price': forms.NumberInput(attrs={"class": "input", 'placeholder': "قیمت"}),
+                   'tags': forms.TextInput(attrs={"class": "input", 'placeholder': "تگ ها"}),
+                   'inventory': forms.NumberInput(attrs={"class": "input", 'placeholder': "تعداد موجودی"}),
+                   "discount": forms.NumberInput(attrs={"class": "input", 'placeholder': "تخفیف"}),
+                   "status": forms.Select(attrs={"class": "input-select", 'placeholder': "وضعیت انتشار"}),
+                   'color': forms.SelectMultiple(attrs={"class": "input-select", 'placeholder': "رنگ ها"})}
 
 
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ['text', 'point']
-        widget = {"text": forms.Textarea(attrs={"class":"input"}),}
+        widget = {"text": forms.Textarea(attrs={"class":"input", 'placeholder': "متن دیدگاه"}),}
 
 
 class OrderItemForm(forms.ModelForm):
     class Meta:
         model = OrderItem
         fields = ['count', "color"]
-        widgets = {'color': forms.Select(attrs={"class": "input-select"})}
+        widgets = {'color': forms.Select(attrs={"class": "input-select", 'placeholder': "رنگ"})}
 
 
 class AddressForm(forms.ModelForm):
@@ -48,13 +48,13 @@ class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
         exclude = ['this_address']
-        widgets = {'mobile_number': forms.TextInput(attrs={"class": "form-control"}),
-                   "user": forms.Select(attrs={"class": "form-control"}),
-                   "home_address": forms.Textarea(attrs={"class": "form-control"}),
-                   "zip_code": forms.TextInput(attrs={"class": "form-control"}),
-                   "body": forms.Textarea(attrs={"class": "form-control"}),
-                   "province": forms.TextInput(attrs={"class": "form-control"}),
-                   "city": forms.TextInput(attrs={"class": "form-control"})}
+        widgets = {'mobile_number': forms.TextInput(attrs={"class": "input", 'placeholder': "شماره تماس"}),
+                   "user": forms.Select(attrs={"class": "input-select", 'placeholder': "حساب"}),
+                   "home_address": forms.Textarea(attrs={"class": "input", 'placeholder': "آدرس"}),
+                   "zip_code": forms.TextInput(attrs={"class": "input", 'placeholder': "کد شهر"}),
+                   "body": forms.Textarea(attrs={"class": "input", 'placeholder': "توضیحات"}),
+                   "province": forms.TextInput(attrs={"class": "input", 'placeholder': "استان"}),
+                   "city": forms.TextInput(attrs={"class": "input", 'placeholder': "شهر"})}
     
     def save(self, commit=True):
         address = super(AddressForm, self).save(commit=False)

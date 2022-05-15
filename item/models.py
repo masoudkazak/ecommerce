@@ -56,8 +56,8 @@ class Uploadimage(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length=250, verbose_name="نام محصول")
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="دسته بندی", related_name="items")
-    company = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="فروشنده")
+    category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, blank=True, null=True, verbose_name="دسته بندی", related_name="items")
+    company = models.ForeignKey(User, on_delete=models.DO_NOTHING, blank=True, null=True, verbose_name="فروشنده")
     price = models.BigIntegerField(verbose_name="قیمت")
     body = RichTextField(verbose_name="نوضیحات")
     description = RichTextField(verbose_name="معرفی",blank=True)

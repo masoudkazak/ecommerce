@@ -2,6 +2,17 @@
 {% block title %}{% block dtitle %}{% endblock dtitle %}{% endblock %}
 
 {% block navigation %}
+{% url 'account:update' request.user.username as update_user_url %}
+{% url 'account:passwordchange' as passwordchange_url %}
+{% url 'account:profile-update' request.user.username as profile_update_url %}
+{% url 'account:companyprofile-create' request.user.username as companyprofile_create_url %}
+{% url 'account:companyprofile-update' request.user.username as companyprofile_update_url %}
+{% url 'item:create' as item_create_url %}
+{% url 'item:myitem' as myitem_url %}
+{% url 'account:profile-create' request.user.username as profile_create_url %}
+{% url 'item:basket' request.user.username as basket_url %}
+{% url 'item:address' as address_url %}
+{% url 'item:address-create' as address_create_url %}
 <!-- NAVIGATION -->
 <nav id="navigation">
     <!-- container -->
@@ -10,32 +21,43 @@
         <div id="responsive-nav">
             <!-- NAV -->
             <ul class="main-nav nav navbar-nav">
+                {% url 'account:update' request.user.username as update_user_url %}
+                {% url 'account:passwordchange' as passwordchange_url %}
+                {% url 'account:profile-update' request.user.username as profile_update_url %}
+                {% url 'account:companyprofile-create' request.user.username as companyprofile_create_url %}
+                {% url 'account:companyprofile-update' request.user.username as companyprofile_update_url %}
+                {% url 'item:create' as item_create_url %}
+                {% url 'item:myitem' as myitem_url %}
+                {% url 'account:profile-create' request.user.username as profile_create_url %}
+                {% url 'item:basket' request.user.username as basket_url %}
+                {% url 'item:address' as address_url %}
+                {% url 'item:address-create' as address_create_url %}
                 {% if request.user.first_name %}
-                    <li class="active"><a href="{% url 'account:dashboard' %}">{{ request.user.first_name }}</a></li>
+                    <li {% if request.path == update_user_url %}class="active"{% endif %}><a href="{{update_user_url}}">{{ request.user.first_name }}</a></li>
                 {% else %}
-                    <li class="active"><a href="{% url 'account:dashboard' %}">{{ request.user }}</a></li>
+                    <li {% if request.path == update_user_url %}class="active"{% endif %}><a href="{{update_user_url}}">{{ request.user }}</a></li>
                 {% endif %}
-                <li><a href="{% url 'account:passwordchange' %}">تغییر رمز عبور</a></li>
+                <li {% if request.path == passwordchange_url %}class="active"{% endif %}><a href="{{passwordchange_url}}">تغییر رمز عبور</a></li>
                 {% if request.user.profile %}
-                    <li><a href="{% url 'account:profile-update' request.user.username %}">ویرایش پروفایل</a></li>
-                    <li><a href="{% url 'account:companyprofile-create' request.user.username %}">ساخت حساب شرکتی</a></li>
+                    <li {% if request.path == profile_update_url %}class="active"{% endif %}><a href="{{ profile_update_url }}">ویرایش پروفایل</a></li>
+                    <li {% if request.path == companyprofile_create_url %}class="active"{% endif %}><a href="{{ companyprofile_create_url }}">ساخت حساب شرکتی</a></li>
                 {% elif request.user.cprofile and request.user.cprofile.confirm == True %}
-                    <li><a href="{% url 'account:companyprofile-update' request.user.username %}">ویرایش پروفایل</a></li>
-                    <li><a href="{% url 'item:create' %}">افزودن محصول</a></li>
-                    <li><a href="{% url 'item:myitem' %}">محصولات من</a></li>
+                    <li {% if request.path == companyprofile_update_url %}class="active"{% endif %}><a href="{{ companyprofile_update_url }}">ویرایش پروفایل</a></li>
+                    <li {% if request.path == item_create_url %}class="active"{% endif %}><a href="{{ item_create_url }}">افزودن محصول</a></li>
+                    <li {% if request.path == myitem_url %}class="active"{% endif %}><a href="{{ myitem_url }}">محصولات من</a></li>
                 {% elif request.user.cprofile and request.user.cprofile.confirm == False %}
-                    <li><a href="{% url 'account:companyprofile-update' request.user.username %}">ویرایش پروفایل</a></li>
+                    <li {% if request.path == companyprofile_update_url %}class="active"{% endif %}><a href="{{ companyprofile_update_url }}">ویرایش پروفایل</a></li>
                 {% else %}
-                    <li><a href="{% url 'account:profile-create' request.user.username %}">تکمیل پروفایل</a></li>
-                    <li><a href="{% url 'account:companyprofile-create' request.user.username %}">ساخت حساب شرکتی</a></li>
+                    <li {% if request.path == profile_create_url %}class="active"{% endif %}><a href="{{ profile_create_url }}">تکمیل پروفایل</a></li>
+                    <li {% if request.path == companyprofile_create_url %}class="active"{% endif %}><a href="{{ companyprofile_create_url }}">ساخت حساب شرکتی</a></li>
                 {% endif %}
                 {% if request.user.customer.items.all %}
-                    <li><a href="{% url 'item:basket' request.user.username %}">سبد خرید</a></li>
+                    <li {% if request.path == basket_url %}class="active"{% endif %}><a href="{{ basket_url }}">سبد خرید</a></li>
                 {% endif %}
                 {% if request.user.address_user.all %}
-                    <li><a href="{% url 'item:address' %}">آدرس ها</a></li>
+                    <li {% if request.path == address_url %}class="active"{% endif %}><a href="{{ address_url }}">آدرس ها</a></li>
                 {% endif %}
-                <li><a href="{% url 'item:address-create' %}">افزودن آدرس</a></li>
+                <li {% if request.path == address_create_url %}class="active"{% endif %}><a href="{{ address_create_url }}">افزودن آدرس</a></li>
             </ul>
             <!-- /NAV -->
         </div>
@@ -55,9 +77,13 @@
             {% block dcontent %}{% endblock dcontent %}
             <!-- Order Details -->
             <div class="col-md-5 order-details">
-                {% if request.user.profile.image or request.user.cprofile.image %}
+                {% if request.user.profile.image %}
                 <div class="section-title text-center">
                     <img src="{{ request.user.profile.image.url }}" height="425.5px" width="425.5px">
+                </div>
+                {% elif request.user.cprofile.image %}
+                <div class="section-title text-center">
+                    <img src="{{ request.user.cprofile.image.url }}" height="425.5px" width="425.5px">
                 </div>
                 {% endif %}
                 

@@ -3,13 +3,48 @@
 {% block dtitle %}افزودن محصول{% endblock dtitle %}
 
 {% block dcontent %}
-<div class="col-3">
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.media }}
-    {{ form.as_p }}
-    <input type="file" multiple name="images" class="form-control"><br><br>
-    <input type="submit" value="افزودن" class="btn btn-primary">
-</form><br>
+<div class="col-md-7">
+    <!-- Billing Details -->
+    <div class="billing-details">
+        <div class="section-title">
+            <h3 class="title">افزودن محصول</h3>
+        </div>
+        <form method='post' enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.media }}
+            {% if request.user.is_superuser %}
+            <div class="form-group">
+                {{ form.company }}
+            </div>
+            <div class="form-group">
+                {{ form.status }}
+            </div>
+            {% endif %}
+            <div class="form-group">
+                {{ form.name }}
+            </div>
+            <div class="form-group">
+                {{ form.category }}
+            </div>
+            <div class="form-group">
+                {{ form.price }}
+            </div>
+            <div class="form-group">
+                {{ form.tags }}
+            </div>
+            <div class="form-group">
+                {{ form.inventory }}
+            </div>
+            <div class="form-group">
+                {{ form.discount }}
+            </div>
+            <div class="form-group">
+                {{ form.color }}
+            </div>
+            <input type="file" multiple name="images" class="input"><br>
+            <input type='submit' value="افزودن" class="primary-btn order-submit">    
+        </form>
+    </div>
+    <!-- /Billing Details -->
 </div>
 {% endblock %}

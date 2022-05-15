@@ -1,3 +1,5 @@
+from ast import Return
+import re
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
@@ -47,6 +49,13 @@ class CompanyProfile(models.Model):
     bio = models.TextField(blank=True, null=True, verbose_name="درمورد شرکت")
     address_company = models.TextField(verbose_name="آدرس")
     confirm = models.BooleanField(default=False, verbose_name="تاییدیه شرکت")
+
+    def get_name(self, user):
+        try:
+            cp = CompanyProfile.objects.get(user=user)
+        except CompanyProfile.DoesNotExist:
+            return "Masoud Company"
+        return cp.name
 
     class Meta:
         ordering = ['user', ]
