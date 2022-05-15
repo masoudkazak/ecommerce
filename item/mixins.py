@@ -43,14 +43,14 @@ class MyItemMixin:
 
 class AddressListMixin:
     def dispatch(self, request, *args, **kwargs):
-        if not self.get_object().exists():
+        if not self.get_queryset().exists():
             messages.info(request, "آدرسی نساخته اید")
             return redirect("account:dashboard")
         count = 0
-        for address in self.get_object():
+        for address in self.get_queryset():
             if address.user == request.user:
                 count += 1
-        if len(self.get_object()) == count or request.user.is_superuser:
+        if len(self.get_queryset()) == count or request.user.is_superuser:
             return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied
 

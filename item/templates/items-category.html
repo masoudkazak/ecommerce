@@ -3,28 +3,91 @@
 {% block title %}{{ category }}{% endblock title %}
 
 {% block content %}
-<div class="row row-cols-1 row-cols-md-4 g-4">
-    {% for item in category.items.all %}
-    <div class="col">
-      <div class="card h-100">
-        <a href="{% url 'item:detail' item.slug item.pk %}" class="stretched-link"><img src="{{ item.images.all.0.image.url }}" class="card-img-top" width="250" height="250"></a>
-          <h5>{{ item.name }}</h5>
-          <h6>{{ item.category }}</h6>
-        <div class="card-footer">
-          <div class="price">
-            {% if item.inventory == 0 %}
-            <h5 class="text-muted" style="text-align:center;">نا موجود</h5>
-            {% else %}
-              {% if item.discount %}
-                  <h5 style="color:green;"><s style="color:red;">{{ item.price_without_discount }}</s> {{ item.final_price }} تومان</h5>
-              {% else %}
-                <h5>{{ item.final_price }} تومان</h5>
+<!-- SECTION -->
+<div class="section">
+  <!-- container -->
+  <div class="container">
+    <!-- row -->
+    <div class="row">
+        <!-- store products -->
+        <div class="row">
+          <!-- product -->
+          {% for item in category.items.all %}
+          <div class="col-md-4 col-xs-6">
+            <div class="product">
+              <div class="product-img">
+                <a href="{% url 'item:detail' item.slug item.pk %}"><img src="{{ item.images.all.0.image.url }}" alt="" width="262.5px" height="262.5px"></a>
+                <div class="product-label">
+                  {% if item.inventory != 0 %}
+                    {% if item.discount %}
+                      <span class="sale">-{{ item.int_discount }}</span>
+                    {% endif %}
+                  {% endif %}
+                  {% if forloop.counter0 == 0 or forloop.counter0 == 1 or forloop.counter0 == 2 %}
+                  <span class="new">NEW</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="product-body">
+                <p class="product-category">{{ item.category }}</p>
+                <h3 class="product-name"><a href="{% url 'item:detail' item.slug item.pk %}">{{ item.name }}</a></h3>
+                {% if item.inventory == 0 %}
+                  <h4 class="product-price">تمام</h4>
+                  <h4 class="product-price">شد</h4>
+                {% else %}
+                  {% if item.discount %}
+                    <h4 class="product-price">{{ item.final_price }} <del class="product-old-price">{{ item.price_without_discount }}</del></h4>
+                    <h4 class="product-price">تومان</h4>
+                   {% else %}
+                    <h4 class="product-price">{{ item.final_price }}</h4>
+                    <h4 class="product-price">تومان</h4>
+                  {% endif %}
+                {% endif %}
+                <div class="product-rating">
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                  <i class="fa fa-star"></i>
+                </div>
+              </div>
+              {% if item.inventory != 0 %}
+              <div class="add-to-cart">
+                <form method="post">
+                  {% csrf_token %}
+                <button class="add-to-cart-btn" name="{{ item }}"><i class="fa fa-shopping-cart"></i> افزودن به سبد</button>
+              </form>
+              </div>
               {% endif %}
-            {% endif %}
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-</div>
+          {% endfor %}
+          <!-- /product -->
+          <!-- store bottom filter -->
+						<div class="store-filter clearfix">
+							<ul class="store-pagination">
+                {% if page_obj.has_previous %}
+                  <li><a href="?page={{ page_obj.previous_page_number }}"><i class="fa fa-angle-left"></i></a></li>
+                {% endif %}
+                {% for n in page_obj.paginator.page_range %}
+                  {% if page_obj.number == n %}
+                    <li class="active">{{ n }}</li>
+                  {% else %}
+                    <li><a href="?page={{ n }}">{{ n }}</a></li>
+                  {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+								  <li><a href="?page={{ page_obj.next_page_number }}"><i class="fa fa-angle-right"></i></a></li>
+                {% endif %}
+              </ul>
+						</div>
+						<!-- /store bottom filter -->
+					</div>
+					<!-- /STORE -->
+				</div>
+				<!-- /row -->
+			</div>
+			<!-- /container -->
+		</div>
+		<!-- /SECTION -->
 {% endblock %}

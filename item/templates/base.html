@@ -89,17 +89,7 @@
               <!-- ACCOUNT -->
               <div class="col-md-3 clearfix">
                 <div class="header-ctn">
-                  <!-- Wishlist -->
-                  {% if request.user.is_authenticated %}
-                    <div>
-                      <a href="{% url 'item:watchlist' %}">
-                        <i class="fa fa-heart-o"></i>
-                        <span>Your Wishlist</span>
-                        <div class="qty">{{ num_watchlist }}</div>
-                      </a>
-                    </div>
-                  {% endif %}
-                  <!-- /Wishlist -->
+                  {% block watchlist %}{% endblock watchlist %}
                   {% block num_basket %}{% endblock num_basket %}
                   <!-- Menu Toogle -->
                   <div class="menu-toggle">
@@ -120,6 +110,7 @@
         <!-- /MAIN HEADER -->
       </header>
       <!-- /HEADER -->
+      {% block navigation %}{% endblock navigation %}
 
       {% if messages %}
           {% for message in messages %}

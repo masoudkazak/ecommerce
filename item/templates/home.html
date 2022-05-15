@@ -60,6 +60,20 @@
 {% endif %}
 {% endblock %}
 
+{% block watchlist %}
+<!-- Wishlist -->
+{% if request.user.is_authenticated %}
+<div>
+  <a href="{% url 'item:watchlist' %}">
+    <i class="fa fa-heart-o"></i>
+    <span>Your Wishlist</span>
+    <div class="qty">{{ num_watchlist }}</div>
+  </a>
+</div>
+{% endif %}
+<!-- /Wishlist -->
+{% endblock watchlist %}
+
 {% block content %}
 <!-- SECTION -->
 <div class="section">
@@ -93,7 +107,7 @@
       <!-- /ASIDE -->
 
       <!-- STORE -->
-      <div id="store" class="col-md-9">
+      {% comment %} <div id="store" class="col-md-9">
         <!-- store top filter -->
         <div class="store-filter clearfix">
           <div class="store-sort">
@@ -113,7 +127,7 @@
               </select>
             </label>
           </div>
-        </div>
+        </div> {% endcomment %}
         <!-- /store top filter -->
 
         <!-- store products -->
@@ -159,10 +173,12 @@
                   {% endfor %}
                 </div>
                 <div class="product-btns">
+                  {% if request.user.is_authenticated %}
                   {% if are_there_watchlist|get_value_dict:item.name %}
                   <a class="removewatch" id="remove{{item.id}}" href="#" data-catid="{{ item.id }}"><i class="fa fa-heart"></i></a>
                   {% else %}
                   <a class="addwatch" id="add{{item.id}}" href="#" data-catid="{{ item.id }}"><i class="fa fa-heart-o"></i></a>
+                  {% endif %}
                   {% endif %}
                 </div>
               </div>

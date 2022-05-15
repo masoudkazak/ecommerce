@@ -17,35 +17,7 @@ from django.core.paginator import Paginator
 class ItemListView(ListView):
     template_name = 'home.html'
     paginate_by = 6
-    queryset = Item.objects.filter(status="p")
-
-    def get_number_basket(self):
-        if self.request.user.is_authenticated:
-            try:
-                order = Order.objects.get(user=self.request.user)
-            except Order.DoesNotExist:
-                return 0
-            if order.items.all().exists():
-                num_orders = order.items.all().count()
-                return num_orders
-            return 0
-    
-    def get_items_basket(self):
-        if self.request.user.is_authenticated:
-            try:
-                myorder = Order.objects.get(user=self.request.user)
-            except Order.DoesNotExist:
-                return []
-            else:
-                return myorder.items.all()
-    
-    def get_final_price_order(self):
-        if self.request.user.is_authenticated:
-            try:
-                order = Order.objects.get(user=self.request.user)
-            except Order.DoesNotExist:
-                return 0    
-            return order.get_price    
+    queryset = Item.objects.filter(status="p").order_by('-inventory', "date")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -53,10 +25,7 @@ class ItemListView(ListView):
         context["items"] = p.page(context['page_obj'].number)
         context["categories"] = Category.objects.all()
         context['search_form'] = ItemSearchForm()
-        context['num_basket'] = self.get_number_basket()
         context['addbasketlist_form'] = AddbasketListForm()
-        context['items_basket'] = self.get_items_basket()
-        context['final_price'] = self.get_final_price_order()
         if self.request.user.is_authenticated:
             context['num_watchlist'] = WatchList.num_watchlist(self, self.request.user)
         else:
@@ -64,12 +33,14 @@ class ItemListView(ListView):
         context['average_dict'] = Comment.get_averages_dict(self, self.queryset)
         if self.request.user.is_authenticated:
             context['are_there_watchlist'] = WatchList.are_there_watchlist(self, self.queryset, self.request.user)
+            context['num_basket'] = Order.get_number_basket(self, self.request.user)
+            context['items_basket'] = Order.get_items_basket(self, self.request.user)
+            context['final_price'] = Order.get_final_price_order(self, self.request.user)
         return context
 
     def post(self, request, *args, **kwargs):
         self.object_list = self.queryset
         context = {}
-        print(request.POST)
         if "search" in request.POST:
             search_form = ItemSearchForm(request.POST)
             if search_form.is_valid():
@@ -140,7 +111,6 @@ class ItemDetailView(PublishedItemMixin, View):
 
     def post(self, request, *args, **kwargs):
         context = {}
-        print(request.POST)
         if 'comment' in request.POST:
             comment_form = CommentForm(request.POST)
             if comment_form.is_valid():
@@ -159,7 +129,6 @@ class ItemDetailView(PublishedItemMixin, View):
                 context['response_form'] = CommentForm
 
         elif 'orderitem' in request.POST:
-            print(request.POST)
             orderitem_form = OrderItemForm(request.POST)
             item = self.get_object()
             if orderitem_form.is_valid():
@@ -302,22 +271,12 @@ class AddressView(LoginRequiredMixin,AddressListMixin, View):
     template_name = "addresslist.html"
     login_url = "/login/"
 
-    def get_object(self):
-        addresses = Address.objects.filter(user=self.request.user)
-        count = 0
-        # if there is bug, all addresses change to False
-        for address in addresses:
-            if address.this_address:
-                count += 1
-        if count > 1:
-            for address in addresses:
-                if address.this_address:
-                    address.this_address = False
-                    address.save()
+    def get_queryset(self):
+        addresses = Address.update_my_address(self, self.request.user)
         return addresses
  
     def get_context_data(self, **kwargs):
-        kwargs['addresses'] = self.get_object()
+        kwargs['addresses'] = self.get_queryset()
         return kwargs
 
     def get(self, request, *args, **kwargs):
@@ -329,14 +288,10 @@ class AddressView(LoginRequiredMixin,AddressListMixin, View):
         if 'choose' in request.POST:
             if 'fav-language' in request.POST:
                 home_address = request.POST['fav-language']
+                Address.unactive_all_addresses(self, request.user)
                 select_address = Address.objects.get(home_address=home_address)
-                for address in self.get_object():
-                    if select_address == address:
-                        select_address.this_address = True
-                        select_address.save()
-                    else:
-                        address.this_address = False
-                        address.save()
+                select_address.this_address = True
+                select_address.save()
                 messages.success(request, "آدرس شما انتخاب شد")
                 return HttpResponseRedirect(reverse('item:address'))
             messages.error(request, "آدرسی انتخاب نکردید")
@@ -451,6 +406,41 @@ class ItemListCategoryView(ItemListCategoryMixin, DetailView):
     def get_object(self):
         category = get_object_or_404(Category, name=self.kwargs['name'])
         return category
+    
+    def post(self, request, *args, **kwargs):
+        items = Item.objects.filter(category=self.get_object()).filter(~Q(inventory=0))
+        context = {}
+        for item in items:
+            if str(item) in request.POST:
+                if request.user == item.company:
+                    messages.error(request, "این محصول شماست نمیتوانید به سبد خود ارسال کنید")
+                    return redirect("item:list")
+
+                try:
+                    update_orderitem = OrderItem.objects.get(item=item, customer=request.user)
+                except OrderItem.DoesNotExist:
+                    new_orderitem = OrderItem.objects.create(item=item,
+                                                                count=1,
+                                                                customer=request.user)
+                    new_orderitem.save()
+                else:
+                    update_orderitem.count += 1
+                    update_orderitem.save()
+
+                try:
+                    update_order = Order.objects.get(user=request.user)
+                except Order.DoesNotExist:
+                    new_order = Order(
+                        user=request.user,
+                    )
+                    new_order.save()
+                    new_order.items.add(OrderItem.objects.get(item=item, customer=request.user))
+                else:
+                    update_order.items.add(OrderItem.objects.get(item=item, customer=request.user))
+                messages.success(request, "به سبد اضافه شد")
+                return HttpResponseRedirect(reverse('item:watchlist'))
+        return render(request, self.template_name, self.get_context_data(**context))
+
 
 
 class WatchListView(LoginRequiredMixin, WatchListMixin, ListView):
@@ -462,38 +452,37 @@ class WatchListView(LoginRequiredMixin, WatchListMixin, ListView):
         return queryset
 
     def post(self, request, *args, **kwargs):
-        self.object_list = self.get_queryset()
+        self.object_list = self.get_queryset().filter(~Q(item__inventory=0))
         context = {}
         for watchlist in self.object_list:
-            if watchlist.item.inventory != 0:
-                if str(watchlist.item) in request.POST:
-                    if request.user == watchlist.item.company:
-                        messages.error(request, "این محصول شماست نمیتوانید به سبد خود ارسال کنید")
-                        return redirect("item:list")
+            if str(watchlist.item) in request.POST:
+                if request.user == watchlist.item.company:
+                    messages.error(request, "این محصول شماست نمیتوانید به سبد خود ارسال کنید")
+                    return redirect("item:list")
 
-                    try:
-                        update_orderitem = OrderItem.objects.get(item=watchlist.item, customer=request.user)
-                    except OrderItem.DoesNotExist:
-                        new_orderitem = OrderItem.objects.create(item=watchlist.item,
-                                                                    count=1,
-                                                                    customer=request.user)
-                        new_orderitem.save()
-                    else:
-                        update_orderitem.count += 1
-                        update_orderitem.save()
+                try:
+                    update_orderitem = OrderItem.objects.get(item=watchlist.item, customer=request.user)
+                except OrderItem.DoesNotExist:
+                    new_orderitem = OrderItem.objects.create(item=watchlist.item,
+                                                                count=1,
+                                                                customer=request.user)
+                    new_orderitem.save()
+                else:
+                    update_orderitem.count += 1
+                    update_orderitem.save()
 
-                    try:
-                        update_order = Order.objects.get(user=request.user)
-                    except Order.DoesNotExist:
-                        new_order = Order(
-                            user=request.user,
-                        )
-                        new_order.save()
-                        new_order.items.add(OrderItem.objects.get(item=watchlist.item, customer=request.user))
-                    else:
-                        update_order.items.add(OrderItem.objects.get(item=watchlist.item, customer=request.user))
-                    messages.success(request, "به سبد اضافه شد")
-                    return HttpResponseRedirect(reverse('item:watchlist'))
+                try:
+                    update_order = Order.objects.get(user=request.user)
+                except Order.DoesNotExist:
+                    new_order = Order(
+                        user=request.user,
+                    )
+                    new_order.save()
+                    new_order.items.add(OrderItem.objects.get(item=watchlist.item, customer=request.user))
+                else:
+                    update_order.items.add(OrderItem.objects.get(item=watchlist.item, customer=request.user))
+                messages.success(request, "به سبد اضافه شد")
+                return HttpResponseRedirect(reverse('item:watchlist'))
         return render(request, self.template_name, self.get_context_data(**context))
 
 

@@ -1,5 +1,4 @@
 from django.db import models
-from ckeditor.fields import RichTextField
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from .validators import UnicodeUsernameValidator
@@ -27,7 +26,7 @@ class User(AbstractUser):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name="کاربر")
     image = models.ImageField(upload_to='profile/%Y/%m/%d/', blank=True, null=True, verbose_name="عکس پروفایل")
-    bio = RichTextField(blank=True, null=True, verbose_name="درمورد من")
+    bio = models.TextField(blank=True, null=True, verbose_name="درمورد من")
     gender = models.CharField(max_length=25, choices=GENDER, blank=True, null=True, verbose_name="جنسیت")
 
     class Meta:
@@ -45,7 +44,7 @@ class CompanyProfile(models.Model):
     image = models.ImageField(upload_to='Cprofile/%Y/%m/%d/', blank=True, null=True, verbose_name="عکس پروفال")
     home_phone_number = models.CharField(max_length=13, validators=[REGEX_HOME_PHONE_NUMBER], default=None, unique=True,
                                          verbose_name="شماره تلفن شرکت")
-    bio = RichTextField(blank=True, null=True, verbose_name="درمورد شرکت")
+    bio = models.TextField(blank=True, null=True, verbose_name="درمورد شرکت")
     address_company = models.TextField(verbose_name="آدرس")
     confirm = models.BooleanField(default=False, verbose_name="تاییدیه شرکت")
 

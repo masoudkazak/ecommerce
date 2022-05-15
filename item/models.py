@@ -177,6 +177,31 @@ class Order(models.Model):
             price += oreritem.get_price()
         return price
         
+    def get_number_basket(self, user):
+        try:
+            order = Order.objects.get(user=user)
+        except Order.DoesNotExist:
+            return 0
+        if order.items.all().exists():
+            num_orders = order.items.all().count()
+            return num_orders
+        return 0 
+
+    def get_items_basket(self, user):
+        try:
+            myorder = Order.objects.get(user=user)
+        except Order.DoesNotExist:
+            return []
+        else:
+            return myorder.items.all()
+    
+    def get_final_price_order(self, user):
+        try:
+            order = Order.objects.get(user=self.request.user)
+        except Order.DoesNotExist:
+            return 0    
+        return order.get_price
+
     class Meta:
         verbose_name_plural = "سبد مشتری ها"
         verbose_name = "سبد مشتری"
@@ -195,10 +220,22 @@ class Address(models.Model):
     province = models.CharField(max_length=100, default="تهران", verbose_name="استان")
     city = models.CharField(max_length=100, default="تهران", verbose_name="شهر")
 
+    def unactive_all_addresses(self, user):
+        addresses = Address.objects.filter(user=user, this_address=True)
+        for address in addresses:
+            address.this_address = False
+            address.save()
+
+    def update_my_address(self, user):
+        addresses = Address.objects.filter(user=user, this_address=True)
+        if len(addresses) > 1:
+            Address.unactive_all_addresses(self, user)
+        return Address.objects.filter(user=user)
+
     class Meta:
         verbose_name_plural = "آدرس ها"
         verbose_name = "آدرس"
-    
+
     def __str__(self):
         return f"{self.user} - {self.mobile_number}"
 

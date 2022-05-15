@@ -130,9 +130,10 @@ class CompanyProfileForm(forms.ModelForm):
     class Meta:
         model = CompanyProfile
         fields = "__all__"
-        widgets = {'gender': forms.Select(attrs={"class": "form-select"}),
-                   'user': forms.Select(attrs={"class": "form-select"}),
-                   "image": forms.FileInput(attrs={"class": "form-control"}),
-                   "home_phone_number": forms.TextInput(attrs={"class": "form-control"}),
-                   "name": forms.TextInput(attrs={"class": "form-control"}),
-                   "address_company": forms.Textarea(attrs={"class": "form-control"}),}
+        widgets = {'bio': forms.Textarea(attrs={"class": "input", 'placeholder': 'درباه شرکت'}),
+                   'user': forms.Select(attrs={"class": "input", 'placeholder': 'حساب'}),
+                   "home_phone_number": forms.TextInput(attrs={"class": "input", 'placeholder': 'شماره تلفن'}),
+                   "name": forms.TextInput(attrs={"class": "input", 'placeholder': 'نام'}),
+                   "address_company": forms.Textarea(attrs={"class": "input", 'placeholder': 'آدرس'}),
+                   "confirm": forms.CheckboxInput(attrs={'placeholder': 'تایید شرکت'}),
+                   }

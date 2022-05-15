@@ -3,11 +3,29 @@
 {% block dtitle %}ویرایش حساب{% endblock dtitle %}
 
 {% block dcontent %}
-<div class="col-6">
-    <form method='POST'>
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type='submit' value="ویرایش" class="btn btn-primary">
-    </form>
+<div class="col-md-7">
+    <!-- Billing Details -->
+    <div class="billing-details">
+        <div class="section-title">
+            <h3 class="title">ویرایش حساب</h3>
+        </div>
+        <form method='post' enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.first_name }}
+            </div>
+            <div class="form-group">
+                {{ form.last_name }}
+            </div>
+            <div class="form-group">
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                {{ form.email }}
+            </div>
+            <input type='submit' value="ویرایش" class="primary-btn order-submit">    
+        </form>
+    </div>
+    <!-- /Billing Details -->
 </div>
 {% endblock %}

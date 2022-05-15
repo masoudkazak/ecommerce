@@ -3,12 +3,43 @@
 {% block dtitle %}ساخت پروفایل شرکتی{% endblock dtitle %}
 
 {% block dcontent %}
-<div class="col-3">
-<form method='post' enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.media }}
-    {{ form.as_p }}
-    <input type='submit' value="ثبت" class="btn btn-primary">
-</form><br>
+<div class="col-md-7">
+    <!-- Billing Details -->
+    <div class="billing-details">
+        <div class="section-title">
+            <h3 class="title">Billing address</h3>
+        </div>
+        <form method='post' enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.media }}
+            {% if request.user.is_superuser %}
+            <div class="form-group">
+                {{ form.user }}
+            </div>
+            <div class="form-group">
+                {{ form.confirm }}
+                <label for="shiping-address">
+                    <span></span>
+                    تاییدیه شرکت
+                </label>
+            </div>
+            {% endif %}
+            <div class="form-group">
+                {{ form.name }}
+            </div>
+            <div class="form-group">
+                {{ form.home_phone_number }}
+            </div>
+            {{ form.image }}<br>
+            <div class="form-group">
+                {{ form.bio }}
+            </div>
+            <div class="form-group">
+                {{ form.address_company }}
+            </div>
+            <input type='submit' value="ثبت" class="primary-btn order-submit">    
+        </form>
+    </div>
+    <!-- /Billing Details -->
 </div>
 {% endblock %}
