@@ -1,46 +1,46 @@
 {% extends 'dashboard.html' %}
-{% comment %} https://transvelo.github.io/electro-html/cart.html {% endcomment %}
+
 {% block dtitle %}سبد خرید{% endblock dtitle %}
   
 {% block dcontent %}
-<div class="col">
-    <form method="POST">
-        {% csrf_token %}
-        {% for orderitem in order.items.all %}
-        <div class="row">
-          <div class="col-md-1">
-            <a href="{% url 'item:detail' orderitem.item.slug orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" height="50px"></a>
-          </div>
-          <div class="col-md-4">
-            {{ orderitem.item.name }}
-          </div>
-          <div class="col-md-3" id="price-basket">
-            {{ orderitem.item.final_price }} تومان
-          </div>
-          <div class="col-md-2">
-            <label for="{{ orderitem.id }}"></label>
-            <input class="form-control" type="number" id="{{ orderitem.id }}" name="{{ orderitem.id }}" min="1" value={{ orderitem.count }}>
-          </div>
-          <div class="col-md-2" id="delete-box"> 
-            <a href="#"><input type="submit" name="delete-{{ orderitem.id }}" value="حذف" class="btn btn-danger"></a><br>
-          </div>
-        </div>
-        {% endfor %}<br>
-        <input type="submit" value="ثبت" class="btn btn-primary">
-    </from><hr>
-    <div class="card">
-        <div class="card-header">
-          قیمت پرداختی و آدرس ارسالی
-        </div>
-        <div class="card-body">
-          <h5 class="card-title">آدرس</h5>
-          <p class="card-text">{{ active_address.home_address }}</p>
-          <a href="{% url 'item:address-update' active_address.pk %}" class="btn btn-primary">ویرایش آدرس</a>
-          <a href="{% url 'item:address' %}" class="btn btn-primary">انتخاب آدرس دیگر</a><br><br>
-          <h5 class="card-title">قیمت کل</h5>
-          <h6 class="card-title">پرداخت : {{ order.get_price }} تومان</h6><br>
-          <a href="#" class="btn btn-success">پرداخت</a><br><br>
-        </div>
-      </div><br>
+<div class="col-md-7">
+  <form method="POST">
+    {% csrf_token %}
+    {% for orderitem in order.items.all %}
+    <div class="row">
+      <div class="col-md-1">
+        <a href="{% url 'item:detail' orderitem.item.slug orderitem.item.pk %}"><img src="{{ orderitem.item.images.all.0.image.url }}" height="25px" width="25px"></a>
+      </div>
+      <div class="col-md-4">
+        {{ orderitem.item.name }}
+      </div>
+      <div class="col-md-3" id="price-basket">
+        {{ orderitem.item.final_price }} تومان
+      </div>
+      <div class="col-md-2" style="margin-top:-25px;">
+        <label for="{{ orderitem.id }}"></label>
+        <input class="form-control" type="number" id="{{ orderitem.id }}" name="{{ orderitem.id }}" min="1" value={{ orderitem.count }}>
+      </div>
+      <div class="col-md-2" id="delete-box"> 
+        <a href="#"><input type="submit" name="delete-{{ orderitem.id }}" value="حذف" class="primary-btn order-submit" style="margin-top:-7px;"></a><br>
+      </div>
+    </div><hr>
+    {% endfor %}
+    <input type='submit' value="ثبت" class="primary-btn order-submit" style="padding: 12px 313.4px;background-color:#0077ed;">    
+</from><hr>
+<div class="card">
+    <div class="card-header">
+      قیمت پرداختی و آدرس ارسالی
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">آدرس</h5>
+      <p class="card-text">{{ active_address.home_address }}</p>
+      <a href="{% url 'item:address-update' active_address.pk %}" class="primary-btn order-submit" style="padding:6px 108.3px;background-color:#0077ed;">ویرایش آدرس</a>
+      <a href="{% url 'item:address' %}" class="primary-btn order-submit" style="padding:6px 95.4px;background-color:#0077ed;">انتخاب آدرس دیگر</a><br><br>
+      <h5 class="card-title">قیمت کل</h5>
+      <h6 class="card-title">پرداخت : {{ order.get_price }} تومان</h6><br>
+      <a href="#" class="primary-btn order-submit" style="padding: 12px 300px;background-color:#4CAF50;">پرداخت</a><br><br>
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -33,6 +33,12 @@
                 {{ form.tags }}
             </div>
             <div class="form-group">
+                {{ form.description }}
+            </div>
+            <div class="form-group">
+                {{ form.body }}
+            </div>
+            <div class="form-group">
                 {{ form.inventory }}
             </div>
             <div class="form-group">
@@ -42,7 +48,7 @@
                 {{ form.color }}
             </div>
             <input type="file" multiple name="images" class="input"><br>
-            <input type='submit' value="افزودن" class="primary-btn order-submit">    
+            <input type='submit' value="افزودن" class="primary-btn order-submit" style="padding: 12px 300px">    
         </form>
     </div>
     <!-- /Billing Details -->

@@ -2,22 +2,42 @@
 {% block title %}ثبت نام{% endblock %}
 
 {% block content %}
-<br>
-<div class="row">
-    <div class="col">
-    </div>
-    <div class="col">
-        <div class="card">
-            <div class="card-body">
-            <form method='POST'>
-                {% csrf_token %}
-                {{ form.as_p }}
-                <input type='submit' value="ثبت" class="btn btn-primary"><br>
-            </form>
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+        <!-- Order Details -->
+                <div class="col-md-5 order-details" style="margin-left:29%;margin-top:180px;">
+                    <div class="section-title text-center">
+                        <h3 class="title">ثبت نام</h3>
+                    </div>
+                    <form method='post'>
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ form.username }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.first_name }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.last_name }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password1 }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password2 }}
+                        </div>
+                        <input type='submit' value="ثبت" class="primary-btn order-submit" style="padding:12px 46%">    
+                    </form>
+                </div>
+                <!-- /Order Details -->
             </div>
+            <!-- /row -->
         </div>
+        <!-- /container -->
     </div>
-    <div class="col">
-    </div>
-</div>
+    <!-- /SECTION -->
 {% endblock %}

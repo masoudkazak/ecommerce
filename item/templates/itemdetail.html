@@ -82,31 +82,37 @@
 								{% endif %}
 							</div>
 							<p>{{ item.description|safe }}</p>
-							<form method="post">
-								{% csrf_token %}
-								<div class="product-options">
-									<label>
-										رنگ ها
-										<select class="input-select" name="color">
-											{% for color in item.color.all %}
-												<option value="{{ color }}">{{ color }}</option>
-											{% endfor %} 
-										</select>
-									</label>
-								</div>
-
-								<div class="add-to-cart">
-									<div class="qty-label">
-										تعداد
-										<div class="input-number">
-											{{ orderitem_form.count }}
-											<span class="qty-up">+</span>
-											<span class="qty-down">-</span>
-										</div>
+							{% if item.inventory != 0 %}
+								{% if request.user.is_authenticated %}
+								<form method="post">
+									{% csrf_token %}
+									<div class="product-options">
+										<label>
+											رنگ ها
+											<select class="input-select" name="color">
+												{% for color in item.color.all %}
+													<option value="{{ color }}">{{ color }}</option>
+												{% endfor %} 
+											</select>
+										</label>
 									</div>
-									<button class="add-to-cart-btn" name='orderitem'><i class="fa fa-shopping-cart"></i>افزودن به سبد</button>
-								</div>
-							</form>
+
+									<div class="add-to-cart">
+										<div class="qty-label">
+											تعداد
+											<div class="input-number">
+												{{ orderitem_form.count }}
+												<span class="qty-up">+</span>
+												<span class="qty-down">-</span>
+											</div>
+										</div>
+										<button class="add-to-cart-btn" name='orderitem'><i class="fa fa-shopping-cart"></i>افزودن به سبد</button>
+									</div>
+								</form>
+								{% else %}
+								<a href="{% url 'account:login' %}"><i class="fa fa-shopping-cart"></i> افزودن به سبد</a>
+								{% endif %}
+							{% endif %}
 							{% if request.user.is_authenticated %}
 								{% if is_there_watchlist %}
 									<form method="post">

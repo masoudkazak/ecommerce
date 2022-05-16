@@ -45,13 +45,13 @@
       {% endfor %}
     </div>
     <div class="cart-summary">
-      <small>{{ items_basket|length }} Item(s) selected</small>
-      <h5>SUBTOTAL: {{ final_price }} تومان</h5>
+      <small>{{ items_basket|length }} محصول انتخاب کرده اید</small>
+      <h5>کل پرداختی: {{ final_price }} تومان</h5>
     </div>
     {% if request.user.is_authenticated %}
     <div class="cart-btns">
-      <a href="{% url 'item:basket' request.user.username %}">View Cart</a>
-      <a href="#">Checkout  <i class="fa fa-arrow-circle-right"></i></a>
+      <a href="{% url 'item:basket' request.user.username %}">سبد خرید</a>
+      <a href="#">تکمیل خرید  <i class="fa fa-arrow-circle-right"></i></a>
     </div>
     {% endif %}
   </div>
@@ -134,7 +134,7 @@
         <div class="row">
           <!-- product -->
           {% for item in items %}
-          <div class="col-md-4 col-xs-6">
+          <div class="col-md-3 col-xs-6">
             <div class="product">
               <div class="product-img">
                 <a href="{% url 'item:detail' item.slug item.pk %}"><img src="{{ item.images.all.0.image.url }}" alt="" width="262.5px" height="262.5px"></a>
@@ -182,7 +182,7 @@
                   {% endif %}
                 </div>
               </div>
-              {% if item.inventory != 0 %}
+              {% if item.inventory != 0 and request.user.is_authenticated %}
               <div class="add-to-cart">
                 <form method="post">
                   {% csrf_token %}

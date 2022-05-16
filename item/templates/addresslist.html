@@ -21,9 +21,10 @@
                     </label>
                     {% comment %} <br><a href="{% url 'item:address-update' address.pk %}">ویرایش</a> {% endcomment %}
                 </div>
+                <a href="{% url 'item:address-update' address.pk %}">ویرایش</a>
             </div>
-            {% endfor %}
-            <input type='submit' value="ثبت" class="primary-btn order-submit">    
+            {% endfor %}<br>
+            <input type='submit' value="ثبت" name="choose" class="primary-btn order-submit" style="padding: 12px 313.4px">    
         </form>
     </div>
     <!-- /Billing Details -->

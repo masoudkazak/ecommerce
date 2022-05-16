@@ -13,12 +13,12 @@ class UserCreateForm(UserCreationForm):
     password1 = forms.CharField(
         label=_("Password"),
         strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "input", "placeholder": "رمز عبور"}),
         help_text=password_validation.password_validators_help_text_html(),
     )
     password2 = forms.CharField(
         label=_("Password confirmation"),
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', "class": "input", "placeholder": "تکرار رمز عبور"}),
         strip=False,
         help_text=_("Enter the same password as before, for verification."),
     )
@@ -26,7 +26,11 @@ class UserCreateForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', "first_name", "last_name", 'password1', 'password2']
-        widgets = {'username': forms.TextInput(attrs={"class": "form-control"})}
+        widgets = {
+            'username': forms.TextInput(attrs={"class": "input", "placeholder": "شماره موبایل"}),
+            'first_name': forms.TextInput(attrs={"class": "input", "placeholder": "نام"}),
+            'last_name': forms.TextInput(attrs={"class": "input", "placeholder": "نام خانوادگی"})
+        }
 
     def save(self, commit=True):
         user = super(UserCreateForm, self).save(commit=False)
@@ -38,11 +42,11 @@ class UserCreateForm(UserCreationForm):
 
 
 class UserLoginForm(AuthenticationForm):
-    username = UsernameField(widget=forms.TextInput(attrs={'autofocus': True, "class": "form-control"}))
+    username = UsernameField(widget=forms.TextInput(attrs={'autofocus': True, "class": "input", "placeholder": "شماره موبایل"}))
     password = forms.CharField(
         label=_("Password"),
         strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', "class": "form-control"}),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', "class": "input", "placeholder": "رمز عبور"}),
     )
 
     def clean(self):

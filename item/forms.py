@@ -21,7 +21,9 @@ class ItemForm(forms.ModelForm):
                    'inventory': forms.NumberInput(attrs={"class": "input", 'placeholder': "تعداد موجودی"}),
                    "discount": forms.NumberInput(attrs={"class": "input", 'placeholder': "تخفیف"}),
                    "status": forms.Select(attrs={"class": "input-select", 'placeholder': "وضعیت انتشار"}),
-                   'color': forms.SelectMultiple(attrs={"class": "input-select", 'placeholder': "رنگ ها"})}
+                   'color': forms.SelectMultiple(attrs={"class": "input-select", 'placeholder': "رنگ ها"}),
+                   "body": forms.Textarea(attrs={"class": "input", "placeholder": "جزئیات"}),
+                   "description": forms.Textarea(attrs={"ckass": "input", "placeholder": "معرفی"})}
 
 
 class CommentForm(forms.ModelForm):

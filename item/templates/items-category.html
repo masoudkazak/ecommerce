@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load item_tags %}
 {% block title %}{{ category }}{% endblock title %}
 
 {% block content %}
@@ -13,7 +13,7 @@
         <div class="row">
           <!-- product -->
           {% for item in category.items.all %}
-          <div class="col-md-4 col-xs-6">
+          <div class="col-md-3 col-xs-6">
             <div class="product">
               <div class="product-img">
                 <a href="{% url 'item:detail' item.slug item.pk %}"><img src="{{ item.images.all.0.image.url }}" alt="" width="262.5px" height="262.5px"></a>
@@ -44,11 +44,12 @@
                   {% endif %}
                 {% endif %}
                 <div class="product-rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
+                  {% for average in average_dict|get_value_dict:item.name|number_to_range_point|get_index_list:0 %}
+                    <i class="fa fa-star"></i>
+                  {% endfor %}
+                  {% for average in average_dict|get_value_dict:item.name|number_to_range_point|get_index_list:1 %}
+                    <i class="fa fa-star-o"></i>
+                  {% endfor %}
                 </div>
               </div>
               {% if item.inventory != 0 %}

@@ -2,22 +2,33 @@
 {% block title %}ورود{% endblock %}
 
 {% block content %}
-<br><br><br><br><br>
-<div class="row">
-    <div class="col">
-    </div>
-    <div class="col">
-        <div class="card">
-            <div class="card-body">
-                <form method='POST'>
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <input type='submit' value="ورود" class="btn btn-primary"><br>
-                </form>
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+        <!-- Order Details -->
+                <div class="col-md-5 order-details" style="margin-left:29%;margin-top:21.5%;">
+                    <div class="section-title text-center">
+                        <h3 class="title">ورود به سایت</h3>
+                    </div>
+                    <form method='post'>
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ form.username }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password }}
+                        </div>
+                        <input type='submit' value="ورود" class="primary-btn order-submit" style="padding:12px 46%">    
+                    </form>
+                </div>
+                <!-- /Order Details -->
             </div>
+            <!-- /row -->
         </div>
+        <!-- /container -->
     </div>
-    <div class="col">
-    </div>
-</div>
+    <!-- /SECTION -->
 {% endblock %}

@@ -400,12 +400,18 @@ class MyItemListView(LoginRequiredMixin, MyItemMixin, ListView):
 
 class ItemListCategoryView(ItemListCategoryMixin, DetailView):
     template_name = "items-category.html"
-    context_object_name = "category"
 
     def get_object(self):
         category = get_object_or_404(Category, name=self.kwargs['name'])
         return category
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["category"] = self.get_object()
+        items = Item.objects.filter(category=self.get_object())
+        context['average_dict'] = Comment.get_averages_dict(self, items)
+        return context
+
     def post(self, request, *args, **kwargs):
         items = Item.objects.filter(category=self.get_object()).filter(~Q(inventory=0))
         context = {}

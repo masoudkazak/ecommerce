@@ -3,15 +3,44 @@
 {% block dtitle %}ویرایش آدرس{% endblock dtitle %}
 
 {% block dcontent %}
-<div class="col-6">
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="ویرایش" class="btn btn-primary">
-</form><br>
-<form method="post">
-    {% csrf_token %}
-    <input type="submit" value="حذف" name="delete" class="btn btn-danger">
-</form><br>
+<div class="col-md-7">
+    <!-- Billing Details -->
+    <div class="billing-details">
+        <div class="section-title">
+            <h3 class="title">ویرایش حساب</h3>
+        </div>
+        <form method='post' enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if request.user.is_superuser %}
+            <div class="form-group">
+                {{ form.user }}
+            </div>
+            {% endif %}
+            <div class="form-group">
+                {{ form.mobile_number }}
+            </div>
+            <div class="form-group">
+                {{ form.home_address }}
+            </div>
+            <div class="form-group">
+                {{ form.zip_code }}
+            </div>
+            <div class="form-group">
+                {{ form.body }}
+            </div>
+            <div class="form-group">
+                {{ form.province }}
+            </div>
+            <div class="form-group">
+                {{ form.city }}
+            </div>
+            <input type='submit' value="ویرایش" class="primary-btn order-submit" style="padding: 12px 300px;background-color:#0077ed;">    
+        </form><br>
+        <form method="post">
+            {% csrf_token %}
+            <input type="submit" value="حذف" name="delete" class="primary-btn order-submit" style="padding: 12px 309px">
+        </form>
+    </div>
+    <!-- /Billing Details -->
 </div>
 {% endblock %}
