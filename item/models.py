@@ -120,10 +120,14 @@ class Comment(models.Model):
         count = 0
         number = [0, 0, 0, 0, 0, 0]
         if comments_item.exists():
-            for comment in comments_item:
-                users.append(comment.user.username)
+            for i in range(0, len(comments_item)):
+                if comments_item[i].user:
+                    users.append(comments_item[i].user.username)
+                else:
+                    users.append("کاربر حذف شده " + str(i+1))
             dict_point_user = dict.fromkeys(users)
             users = list(dict.fromkeys(users))
+            print(users)
             for user in users:
                 mycomment = Comment.objects.filter(user__username=user, item=item).order_by("-date")
                 for c in mycomment:
@@ -152,7 +156,7 @@ class Comment(models.Model):
 class OrderItem(models.Model):
     customer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="مشتری")
     item = models.ForeignKey(Item, on_delete=models.CASCADE, verbose_name="محصول")
-    color = models.CharField(max_length=250, null=True, blank=True)
+    color = models.CharField(max_length=250, blank=True, null=True)
     count = models.PositiveIntegerField(default=1, verbose_name="تعداد")
 
     def get_price(self):

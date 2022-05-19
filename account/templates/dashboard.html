@@ -30,6 +30,7 @@
                 {% if request.user.profile %}
                     <li {% if request.path == profile_update_url %}class="active"{% endif %}><a href="{{ profile_update_url }}">ویرایش پروفایل</a></li>
                     <li {% if request.path == companyprofile_create_url %}class="active"{% endif %}><a href="{{ companyprofile_create_url }}">ساخت حساب شرکتی</a></li>
+                
                 {% elif request.user.cprofile and request.user.cprofile.confirm == True %}
                     <li {% if request.path == companyprofile_update_url %}class="active"{% endif %}><a href="{{ companyprofile_update_url }}">ویرایش پروفایل</a></li>
                     <li {% if request.path == item_create_url %}class="active"{% endif %}><a href="{{ item_create_url }}">افزودن محصول</a></li>
@@ -38,6 +39,10 @@
                     <li {% if request.path == companyprofile_update_url %}class="active"{% endif %}><a href="{{ companyprofile_update_url }}">ویرایش پروفایل</a></li>
                 {% else %}
                     <li {% if request.path == profile_create_url %}class="active"{% endif %}><a href="{{ profile_create_url }}">تکمیل پروفایل</a></li>
+                    <li {% if request.path == companyprofile_create_url %}class="active"{% endif %}><a href="{{ companyprofile_create_url }}">ساخت حساب شرکتی</a></li>
+                {% endif %}
+                {% if request.user.is_superuser %}
+                    <li {% if request.path == profile_create_url %}class="active"{% endif %}><a href="{{ profile_create_url }}">ساخت پروفایل</a></li>
                     <li {% if request.path == companyprofile_create_url %}class="active"{% endif %}><a href="{{ companyprofile_create_url }}">ساخت حساب شرکتی</a></li>
                 {% endif %}
                 {% if request.user.customer.items.all %}

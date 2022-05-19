@@ -68,7 +68,7 @@
 									<i class="fa fa-star-o"></i>
 									{% endfor %}
 								</div>
-								<a class="review-link" data-toggle="tab" href="#tab3">{{ item.comments.all|length }} Review(s) | Add your review</a>
+								<a class="review-link" data-toggle="tab" href="#tab3">{{ comments|length }} Review(s) | Add your review</a>
 							</div>
 							<div>
 								{% if item.inventory == 0 %}
@@ -162,7 +162,7 @@
 							<ul class="tab-nav">
 								<li class="active"><a data-toggle="tab" href="#tab1">معرفی</a></li>
 								<li><a data-toggle="tab" href="#tab2">جزییات</a></li>
-								<li><a data-toggle="tab" href="#tab3">دیدگاه({{ item.comments.all|length }})</a></li>
+								<li><a data-toggle="tab" href="#tab3">دیدگاه({{ comments|length }})</a></li>
 							</ul>
 							<!-- /product tab nav -->
 
@@ -228,7 +228,7 @@
 										<div class="col-md-6">
 											<div id="reviews">
 												<ul class="reviews">
-													{% for comment in item.comments.all %}
+													{% for comment in comments %}
 													<li>
 														<div class="review-heading">
 															{% if comment.user.first_name %}

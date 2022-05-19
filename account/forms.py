@@ -141,5 +141,5 @@ class CompanyProfileForm(forms.ModelForm):
                    "home_phone_number": forms.TextInput(attrs={"class": "input", 'placeholder': 'شماره تلفن'}),
                    "name": forms.TextInput(attrs={"class": "input", 'placeholder': 'نام'}),
                    "address_company": forms.Textarea(attrs={"class": "input", 'placeholder': 'آدرس'}),
-                   "confirm": forms.CheckboxInput(attrs={'placeholder': 'تایید شرکت', "class":"input"}),
+                   "confirm": forms.CheckboxInput(attrs={'placeholder': 'تایید شرکت', "id": "shiping-address"}),
                    }

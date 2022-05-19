@@ -103,6 +103,7 @@ class ItemDetailView(PublishedItemMixin, View):
         kwargs['dict_point_users'] = Comment.dict_point_users(self, self.get_object())
         if self.request.user.is_authenticated:
             kwargs['is_there_watchlist'] = WatchList.is_there_watchlist(self, self.request.user, self.get_object())
+        kwargs['comments'] = Comment.objects.filter(item=self.get_object()).filter(~Q(user=None))
         return kwargs
 
     def get(self, request, *args, **kwargs):
@@ -161,9 +162,9 @@ class ItemDetailView(PublishedItemMixin, View):
                         user=request.user,
                     )
                     new_order.save()
-                    new_order.items.add(OrderItem.objects.get(item=item))
+                    new_order.items.add(OrderItem.objects.get(item=item, color=request.POST['color'], customer=request.user))
                 else:
-                    update_order.items.add(OrderItem.objects.get(item=item))
+                    update_order.items.add(OrderItem.objects.get(item=item, color=request.POST['color'], customer=request.user))
                 messages.success(request, "به سبد اضافه شد")
                 return HttpResponseRedirect(reverse('item:detail', args=[item.slug, item.id, ]))
             else:
