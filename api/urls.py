@@ -1,10 +1,11 @@
 from django.urls import path
 from .views import *
 
+
 app_name = 'api'
 
 urlpatterns = [
-    path('', ItemListAPIView.as_view(), name='item-list'),
+    path('home', ItemListAPIView.as_view(), name='item-list'),
     path('item/create/', ItemCreateAPIView.as_view(), name='item-create'),
     path('item/<slug:slug>/<int:pk>/', ItemRetrieveAPIView.as_view(), name='item-ddu'),
     path("item/comment/create", CommentCreateAPIView.as_view(), name="comment-create"),
