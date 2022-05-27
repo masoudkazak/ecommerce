@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'account',
     'ckeditor',
     'swagger',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
